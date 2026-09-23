@@ -72,7 +72,7 @@ pub enum GeneratePivotArgumentsError {
     ),
 }
 
-diskann::convert_error!(GeneratePivotArgumentsError);
+webc_diskann::convert_error!(GeneratePivotArgumentsError);
 
 impl GeneratePivotArguments {
     /// Constructor
@@ -140,7 +140,7 @@ impl GeneratePivotArguments {
 
 #[cfg(test)]
 mod arguments_test {
-    use diskann::ANNResult;
+    use webc_diskann::ANNResult;
 
     use super::*;
 

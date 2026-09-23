@@ -5,7 +5,7 @@
 
 //! Shared search post-processing.
 
-use diskann::{
+use webc_diskann::{
     graph::{SearchOutputBuffer, glue},
     neighbor::Neighbor,
     provider::HasId,
@@ -16,14 +16,14 @@ use diskann::{
 ///
 /// # Note
 ///
-/// This **must not** be used as a general replacement for [`diskann::provider::Delete`].
+/// This **must not** be used as a general replacement for [`webc_diskann::provider::Delete`].
 /// This must only be used as a performance improvement for [`RemoveDeletedIdsAndCopy`].
 pub(crate) trait AsDeletionCheck {
     type Checker: DeletionCheck;
     fn as_deletion_check(&self) -> &Self::Checker;
 }
 
-/// A light-weight, synchronous alternative to [`diskann::provider::Delete`], targeted at
+/// A light-weight, synchronous alternative to [`webc_diskann::provider::Delete`], targeted at
 /// quickly filtering out deleted IDs during search post-processing.
 ///
 /// For the [`NoDeletes`](super::common::NoDeletes) case, we rely on constant-propagation

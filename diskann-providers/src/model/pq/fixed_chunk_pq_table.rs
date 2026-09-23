@@ -3,7 +3,6 @@
  * Licensed under the MIT license.
  */
 
-use diskann::{ANNError, ANNResult, utils::IntoUsize};
 use diskann_quantization::{
     CompressInto,
     product::{self, BasicTable},
@@ -15,6 +14,7 @@ use diskann_utils::{
 };
 use diskann_vector::{PureDistanceFunction, distance};
 use diskann_wide::ARCH;
+use webc_diskann::{ANNError, ANNResult, utils::IntoUsize};
 
 use super::NUM_PQ_CENTROIDS;
 use crate::utils::{Bridge, BridgeErr};
@@ -450,7 +450,7 @@ impl TryFrom<BasicTable> for FixedChunkPQTable {
 // However, we can use a wrapper type to implement the conversion.
 // This is a workaround to allow the conversion from `product::TableCompressionError` to
 // `ANNError` without violating the orphan rule.
-diskann::convert_error!(Bridge<product::TableCompressionError>);
+webc_diskann::convert_error!(Bridge<product::TableCompressionError>);
 
 impl<T> CompressInto<&[T], &mut [u8]> for FixedChunkPQTable
 where
@@ -692,8 +692,8 @@ mod fixed_chunk_pq_table_test {
     use core::ops::Range;
 
     use crate::storage::{PQStorage, VirtualStorageProvider};
+    use crate::test_utils::test_data_root;
     use approx::assert_relative_eq;
-    use diskann_utils::test_data_root;
     use diskann_vector::{
         PureDistanceFunction,
         distance::{InnerProduct, SquaredL2},

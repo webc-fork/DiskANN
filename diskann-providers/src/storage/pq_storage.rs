@@ -5,10 +5,6 @@
 use std::io::{Seek, SeekFrom, Write};
 
 use super::{StorageReadProvider, StorageWriteProvider};
-use diskann::{
-    ANNError, ANNResult,
-    utils::{IntoUsize, VectorRepr},
-};
 use diskann_quantization::{product::BasicTable, views::ChunkOffsetsBase};
 use diskann_utils::{
     io::{Metadata, read_bin, write_bin},
@@ -16,6 +12,10 @@ use diskann_utils::{
 };
 use rand::Rng;
 use tracing::info;
+use webc_diskann::{
+    ANNError, ANNResult,
+    utils::{IntoUsize, VectorRepr},
+};
 
 use crate::{
     model::{
@@ -339,7 +339,7 @@ impl PQStorage {
 mod pq_storage_tests {
 
     use crate::storage::VirtualStorageProvider;
-    use diskann_utils::test_data_root;
+    use crate::test_utils::test_data_root;
     use vfs::MemoryFS;
 
     use super::*;

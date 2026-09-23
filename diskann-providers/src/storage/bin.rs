@@ -7,11 +7,11 @@ use std::io::{BufReader, BufWriter, Seek, SeekFrom, Write};
 
 use super::{StorageReadProvider, StorageWriteProvider};
 use byteorder::{LittleEndian, ReadBytesExt};
-use diskann::{
+use diskann_utils::io::Metadata;
+use webc_diskann::{
     ANNError, ANNResult,
     utils::{IntoUsize, VectorRepr},
 };
-use diskann_utils::io::Metadata;
 
 use crate::utils::load_metadata_from_file;
 

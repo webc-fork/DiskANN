@@ -1,5 +1,5 @@
 [package]
-name = "diskann-inmem"
+name = "webc-diskann-inmem"
 version.workspace = true
 description.workspace = true
 authors.workspace = true
@@ -13,7 +13,7 @@ crossbeam-queue = "0.3.12"
 dashmap.workspace = true
 # The workspace entry opts out of default features so the async runtime backend
 # stays opt-in; the `tokio`/`compio` features below forward the backend choice.
-diskann = { workspace = true }
+webc-diskann = { workspace = true }
 diskann-utils = { workspace = true, default-features = false }
 diskann-vector = { workspace = true }
 diskann-wide = { workspace = true }
@@ -23,12 +23,12 @@ hashbrown = { workspace = true }
 thiserror = { workspace = true }
 
 # Integration Test Dependencies
-diskann-benchmark-runner = { workspace = true, optional = true, features = ["ux-tools"] }
+diskann-benchmark-runner = { version = "0.59.0", optional = true, features = ["ux-tools"] }
 serde = { workspace = true, features = ["derive"], optional = true }
 serde_json = { workspace = true, optional = true }
 anyhow = { workspace = true, optional = true }
 rand = { workspace = true, optional = true }
-diskann-benchmark-core = { workspace = true, optional = true }
+diskann-benchmark-core = { version = "0.59.0", optional = true }
 tokio = { workspace = true, optional = true }
 compio = { workspace = true, optional = true }
 
@@ -41,7 +41,7 @@ panic = "warn"
 uninlined_format_args = "allow"
 
 [dev-dependencies]
-diskann = { workspace = true, features = ["testing"] }
+webc-diskann = { workspace = true, features = ["testing"] }
 rand = { workspace = true }
 tokio = { workspace = true, features = ["macros"] }
 tempfile = { workspace = true }
@@ -55,16 +55,16 @@ required-features = ["integration-test"]
 default = ["tokio", "tracing"]
 
 # Use the tokio runtime (forwarded to `diskann`); upstream default behavior.
-tokio = ["dep:tokio", "diskann/tokio"]
+tokio = ["dep:tokio", "webc-diskann/tokio"]
 
 # Use the compio (thread-per-core) runtime instead. When both `tokio` and
 # `compio` are enabled, `tokio` takes precedence. At least one runtime backend
 # must be enabled.
-compio = ["dep:compio", "diskann/compio"]
+compio = ["dep:compio", "webc-diskann/compio"]
 
 # Forward tracing instrumentation of the `diskann` crate (enabled by default,
 # matching the previous default-feature behavior).
-tracing = ["diskann/tracing"]
+tracing = ["webc-diskann/tracing"]
 
 # Enable stress test module
 integration-test = [

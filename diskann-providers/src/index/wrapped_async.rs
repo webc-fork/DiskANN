@@ -5,7 +5,8 @@
 
 use std::{num::NonZeroUsize, sync::Arc};
 
-use diskann::{
+use diskann_utils::Reborrow;
+use webc_diskann::{
     ANNError, ANNResult,
     graph::{
         self, ConsolidateKind, InplaceDeleteMethod,
@@ -20,7 +21,6 @@ use diskann::{
     provider::{DataProvider, Delete, NeighborAccessor, NeighborAccessorMut, SetElement},
     utils::ONE,
 };
-use diskann_utils::Reborrow;
 
 use crate::runtime::Handle;
 use crate::storage::{LoadWith, StorageReadProvider};
@@ -545,7 +545,7 @@ where
 }
 
 pub mod noawait {
-    //! Implementations of a synchronous wrapper around [`diskann::graph::DiskANNIndex`] that
+    //! Implementations of a synchronous wrapper around [`webc_diskann::graph::DiskANNIndex`] that
     //! assume the [`SearchAccessor`] and associated implementations never truly `await` and are
     //! in fact synchronous.
     //!
@@ -563,8 +563,8 @@ pub mod noawait {
         task::{Context, Poll, Waker},
     };
 
-    use diskann::utils::VectorId;
     use thiserror::Error;
+    use webc_diskann::utils::VectorId;
 
     type Input = Rc<RefCell<Option<usize>>>;
     type Output<I> = Rc<RefCell<Option<Vec<Neighbor<I>>>>>;
@@ -665,20 +665,20 @@ pub mod noawait {
         MissingOutput,
     }
 
-    diskann::convert_error!(InternalInvariantViolated);
+    webc_diskann::convert_error!(InternalInvariantViolated);
 }
 
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
 
-    use diskann::{
+    use crate::test_utils::test_data_root;
+    use diskann_vector::distance::Metric;
+    use webc_diskann::{
         graph::{self, search_output_buffer},
         provider::DefaultContext,
         utils::ONE,
     };
-    use diskann_utils::test_data_root;
-    use diskann_vector::distance::Metric;
 
     use super::DiskANNIndex;
     use crate::{
@@ -798,7 +798,7 @@ mod tests {
         DiskANNIndex::new_with_current_thread_runtime(
             graph::config::Builder::new(
                 provider.max_degree(),
-                diskann::graph::config::MaxDegree::same(),
+                webc_diskann::graph::config::MaxDegree::same(),
                 100,
                 (Metric::L2).into(),
             )
@@ -911,19 +911,23 @@ mod tests {
     // End-to-end proof for the `compio` backend: with tokio disabled, the
     // synchronous wrapper builds an index through the parallel `multi_insert`
     // path (exercising backend task spawning), saves, reloads and searches it
-    // on top of a compio runtime.
+    // on top of a compio runtime. Synthetic data keeps this test independent
+    // of the workspace `test_data` assets.
     #[cfg(all(feature = "compio", not(feature = "tokio")))]
     #[test]
     fn test_compio_backend_end_to_end() {
-        // -- Load training data and prepare the provider ----------------------
-        let save_path = "/index";
-        let file_path = "/sift/siftsmall_learn_256pts.fbin";
+        use rand::{Rng, SeedableRng};
 
-        let train_data = {
-            let storage = VirtualStorageProvider::new_overlay(test_data_root());
-            let mut reader = storage.open_reader(file_path).unwrap();
-            diskann_utils::io::read_bin::<f32>(&mut reader).unwrap()
-        };
+        const DIM: usize = 16;
+        const NPTS: usize = 64;
+
+        // -- Synthetic training data (row-major fill) ---------------------------
+        let mut rng = rand::rngs::StdRng::seed_from_u64(0xdec0_beef);
+        let mut train_data = diskann_utils::views::Matrix::new(0.0f32, NPTS, DIM);
+        train_data
+            .as_mut_slice()
+            .iter_mut()
+            .for_each(|v| *v = rng.random::<f32>());
 
         let pq_bytes = 8;
         let pq_table = diskann_async::train_pq(
@@ -955,13 +959,14 @@ mod tests {
 
         // -- Build through the parallel multi-insert path ----------------------
         let ctx = DefaultContext;
-        let batch: Arc<diskann_utils::views::Matrix<f32>> = Arc::new(train_data.clone());
         let ids: Arc<[u32]> = (0..train_data.nrows() as u32).collect::<Vec<_>>().into();
+        let batch: Arc<diskann_utils::views::Matrix<f32>> = Arc::new(train_data.clone());
         index
             .multi_insert::<_, diskann_utils::views::Matrix<f32>>(FullPrecision, &ctx, batch, ids)
             .unwrap();
 
         // -- Save through the runtime facade -----------------------------------
+        let save_path = "/index";
         let save_metadata = AsyncIndexMetadata::new(save_path.to_string());
         let storage = VirtualStorageProvider::new_memory();
         let storage_ref = &storage;

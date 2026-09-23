@@ -25,9 +25,9 @@
 
 use std::ptr::NonNull;
 
-use diskann::{graph::AdjacencyList, utils::IntoUsize};
 use parking_lot::{RwLock, RwLockWriteGuard};
 use thiserror::Error;
+use webc_diskann::{graph::AdjacencyList, utils::IntoUsize};
 
 use crate::{
     buffer::{Buffer, BufferError},
@@ -258,7 +258,7 @@ pub(crate) enum NeighborsError {
 #[error("index {} is out-of-bounds", self.0)]
 pub(crate) struct OutOfBounds(u32);
 
-diskann::convert_error!(OutOfBounds);
+webc_diskann::convert_error!(OutOfBounds);
 
 /// A neighbor list was longer than the configured per-list capacity.
 ///
@@ -271,7 +271,7 @@ pub(crate) struct TooLong {
     max: u32,
 }
 
-diskann::convert_error!(TooLong);
+webc_diskann::convert_error!(TooLong);
 
 /// Errors during [`Neighbors::set`].
 #[derive(Debug, Clone, Copy, Error)]
@@ -285,7 +285,7 @@ pub(crate) enum SetError {
     TooLong(TooLong),
 }
 
-diskann::convert_error!(SetError);
+webc_diskann::convert_error!(SetError);
 
 /// A locked adjacency list to implement atomic read-modify-write operations.
 ///

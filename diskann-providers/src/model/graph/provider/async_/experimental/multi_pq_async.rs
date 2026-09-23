@@ -6,11 +6,11 @@
 use std::sync::{Arc, Mutex};
 
 use arc_swap::{ArcSwap, Guard};
-use diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 use diskann_quantization::CompressInto;
 use diskann_utils::lazy_format;
 use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
 use rand::{Rng, SeedableRng, rngs::StdRng};
+use webc_diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 
 use crate::{
     model::{

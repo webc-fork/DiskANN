@@ -6,8 +6,8 @@
 use std::{collections::HashMap, io::Write, sync::atomic::Ordering::Relaxed};
 
 use diskann_benchmark_runner as dbr;
-use diskann_inmem::integration::store::checked;
 use serde::{Deserialize, Serialize};
+use webc_diskann_inmem::integration::store::checked;
 
 pub(super) fn register(registry: &mut dbr::Registry) -> Result<(), dbr::RegistryError> {
     registry.register("store-stress-test-checked", Stress)

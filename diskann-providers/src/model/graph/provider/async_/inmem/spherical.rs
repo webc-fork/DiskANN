@@ -7,7 +7,15 @@
 
 use std::{future::Future, sync::Mutex};
 
-use diskann::{
+use diskann_quantization::{
+    alloc::{GlobalAllocator, ScopedAllocator},
+    meta::NotCanonical,
+    spherical,
+};
+use diskann_utils::future::AsyncFriendly;
+use diskann_vector::{PreprocessedDistanceFunction, distance::Metric};
+use thiserror::Error;
+use webc_diskann::{
     ANNError, ANNResult, convert_error, default_post_processor,
     error::IntoANNResult,
     graph::{
@@ -21,14 +29,6 @@ use diskann::{
     provider::{ExecutionContext, HasId},
     utils::{IntoUsize, VectorRepr},
 };
-use diskann_quantization::{
-    alloc::{GlobalAllocator, ScopedAllocator},
-    meta::NotCanonical,
-    spherical,
-};
-use diskann_utils::future::AsyncFriendly;
-use diskann_vector::{PreprocessedDistanceFunction, distance::Metric};
-use thiserror::Error;
 
 use super::{GetFullPrecision, Rerank};
 use crate::{
@@ -647,7 +647,7 @@ where
         >,
 {
     type Seed = ();
-    type FinishError = diskann::error::Infallible;
+    type FinishError = webc_diskann::error::Infallible;
     type PruneStrategy = Self;
     type InsertStrategy = Self;
 
@@ -691,7 +691,7 @@ pub enum RQError {
     FullPrecisionConversionErr(Box<dyn std::error::Error + Send + Sync>),
 }
 
-diskann::convert_error!(RQError);
+webc_diskann::convert_error!(RQError);
 
 ///////////
 // Tests //

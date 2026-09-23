@@ -38,8 +38,8 @@
 
 use std::sync::atomic::Ordering;
 
-use diskann::utils::IntoUsize;
 use thiserror::Error;
+use webc_diskann::utils::IntoUsize;
 
 use crate::{
     buffer::{Buffer, BufferError, RawSlice},

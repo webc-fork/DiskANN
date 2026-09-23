@@ -6,20 +6,6 @@
 use std::{future::Future, sync::Mutex};
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
-use diskann::{
-    ANNError, ANNResult, default_post_processor,
-    error::IntoANNResult,
-    graph::{
-        AdjacencyList,
-        glue::{
-            self, DefaultPostProcessor, FilterStartPoints, InsertStrategy, Pipeline, PruneStrategy,
-            SearchStrategy,
-        },
-        workingset,
-    },
-    provider::{ExecutionContext, HasId},
-    utils::{IntoUsize, VectorRepr},
-};
 use diskann_quantization::{
     AsFunctor, CompressInto,
     bits::{Representation, Unsigned},
@@ -33,6 +19,20 @@ use diskann_quantization::{
 use diskann_utils::{Reborrow, ReborrowMut, future::AsyncFriendly};
 use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
 use thiserror::Error;
+use webc_diskann::{
+    ANNError, ANNResult, default_post_processor,
+    error::IntoANNResult,
+    graph::{
+        AdjacencyList,
+        glue::{
+            self, DefaultPostProcessor, FilterStartPoints, InsertStrategy, Pipeline, PruneStrategy,
+            SearchStrategy,
+        },
+        workingset,
+    },
+    provider::{ExecutionContext, HasId},
+    utils::{IntoUsize, VectorRepr},
+};
 
 use super::{DefaultProvider, GetFullPrecision, Rerank};
 use crate::{
@@ -748,7 +748,7 @@ where
         >,
 {
     type Seed = ();
-    type FinishError = diskann::error::Infallible;
+    type FinishError = webc_diskann::error::Infallible;
     type PruneStrategy = Self;
     type InsertStrategy = Self;
 
@@ -893,16 +893,16 @@ pub enum SQError {
     QuantizerDecodeError(#[from] crate::storage::protos::ProtoConversionError),
 }
 
-diskann::convert_error!(SQError);
+webc_diskann::convert_error!(SQError);
 
 #[cfg(test)]
 mod tests {
     use crate::storage::VirtualStorageProvider;
-    use diskann::utils::ONE;
     use diskann_quantization::scalar::train::ScalarQuantizationParameters;
     use diskann_utils::views::MatrixView;
     use diskann_vector::distance::Metric;
     use rstest::rstest;
+    use webc_diskann::utils::ONE;
 
     use super::*;
 

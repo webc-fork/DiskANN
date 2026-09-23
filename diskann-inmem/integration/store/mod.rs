@@ -3,7 +3,7 @@
  * Licensed under the MIT license.
  */
 
-//! Concurrency stress test for the in-memory [stores](diskann_inmem::integration::store).
+//! Concurrency stress test for the in-memory [stores](webc_diskann_inmem::integration::store).
 //!
 //! Reader, writer, and retirer threads hammer the epoch-based store concurrently while a
 //! per-guard invariant checker verifies the store's safety guarantees:

@@ -153,7 +153,7 @@ pub enum DeterminantDiversityError {
     },
 }
 
-diskann::convert_error!(DeterminantDiversityError);
+webc_diskann::convert_error!(DeterminantDiversityError);
 
 #[derive(Clone, Copy)]
 struct DistanceRange {

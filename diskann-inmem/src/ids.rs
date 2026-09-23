@@ -9,9 +9,9 @@ use dashmap::{
     DashMap,
     mapref::entry::{self, OccupiedEntry},
 };
-use diskann::utils::IntoUsize;
 use parking_lot::{RwLock, RwLockWriteGuard};
 use thiserror::Error;
+use webc_diskann::utils::IntoUsize;
 
 use crate::num::Capacity;
 
@@ -176,7 +176,7 @@ pub(crate) enum InsertError {
     InternalExists,
 }
 
-diskann::convert_error!(InsertError);
+webc_diskann::convert_error!(InsertError);
 
 /// A handle to a valid entry in a [`IdMap`].
 ///

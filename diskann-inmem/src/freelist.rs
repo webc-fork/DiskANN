@@ -64,7 +64,7 @@ use std::{
 };
 
 use crossbeam_queue::ArrayQueue;
-use diskann::utils::IntoUsize;
+use webc_diskann::utils::IntoUsize;
 
 // NOTE: We want the scan size to be relatively big. Each tag occupied just a single byte,
 // so a scan needs to be at least 64 to ensure a thread is working with just a single cache

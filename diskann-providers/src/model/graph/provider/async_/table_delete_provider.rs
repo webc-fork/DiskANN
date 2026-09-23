@@ -5,7 +5,7 @@
 
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use diskann::utils::IntoUsize;
+use webc_diskann::utils::IntoUsize;
 
 use super::postprocess;
 

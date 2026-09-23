@@ -15,7 +15,7 @@
 
 use std::{future::Future, sync::Arc};
 
-use diskann::{
+use webc_diskann::{
     ANNResult,
     error::StandardError,
     graph::{
@@ -240,11 +240,11 @@ where
 mod tests {
     use super::*;
 
-    use diskann::graph::{
+    use std::collections::HashSet;
+    use webc_diskann::graph::{
         glue::{HybridPredicate, Predicate, PredicateMut, SearchAccessor},
         test::{provider as test_provider, synthetic::Grid},
     };
-    use std::collections::HashSet;
 
     /// A simple `QueryLabelProvider` that matches multiples of 3.
     #[derive(Debug)]

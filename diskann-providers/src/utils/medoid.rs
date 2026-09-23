@@ -4,11 +4,11 @@
  */
 
 use crate::storage::StorageReadProvider;
-use diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 use diskann_vector::{PureDistanceFunction, distance::SquaredL2};
 use rand::Rng;
 use rand_distr::{Distribution, StandardUniform};
 use tracing::info;
+use webc_diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 
 use crate::utils::{
     VectorDataIterator, load_metadata_from_file,
@@ -251,7 +251,6 @@ mod tests {
     use std::{io::Write, num::NonZeroUsize};
 
     use crate::storage::VirtualStorageProvider;
-    use diskann::utils::VectorRepr;
     use diskann_quantization::{
         CompressInto,
         algorithms::{Transform, transforms::NullTransform},
@@ -261,6 +260,7 @@ mod tests {
     use diskann_utils::{ReborrowMut, io::Metadata};
     use rand::{SeedableRng, rngs::StdRng};
     use vfs::{FileSystem, MemoryFS};
+    use webc_diskann::utils::VectorRepr;
 
     use super::*;
     use crate::common::MinMaxElement;

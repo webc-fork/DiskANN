@@ -5,12 +5,12 @@
 
 use std::sync::Arc;
 
-use diskann::{
+use diskann_utils::future::AsyncFriendly;
+use webc_diskann::{
     ANNResult,
     graph::{Config, DiskANNIndex},
     utils::VectorRepr,
 };
-use diskann_utils::future::AsyncFriendly;
 
 use crate::model::{
     self,
@@ -34,11 +34,11 @@ pub(crate) fn simplified_builder(
     metric: diskann_vector::distance::Metric,
     dim: usize,
     max_points: usize,
-    modify: impl FnOnce(&mut diskann::graph::config::Builder),
+    modify: impl FnOnce(&mut webc_diskann::graph::config::Builder),
 ) -> ANNResult<(Config, DefaultProviderParameters)> {
-    let config = diskann::graph::config::Builder::new_with(
+    let config = webc_diskann::graph::config::Builder::new_with(
         pruned_degree,
-        diskann::graph::config::MaxDegree::default_slack(),
+        webc_diskann::graph::config::MaxDegree::default_slack(),
         l_search,
         metric.into(),
         modify,
@@ -47,7 +47,7 @@ pub(crate) fn simplified_builder(
 
     let params = DefaultProviderParameters {
         max_points,
-        frozen_points: diskann::utils::ONE,
+        frozen_points: webc_diskann::utils::ONE,
         metric,
         dim,
         prefetch_lookahead: None,
@@ -158,9 +158,18 @@ pub(crate) mod tests {
     };
 
     use crate::storage::VirtualStorageProvider;
+    use crate::test_utils::test_data_root;
     use approx::assert_abs_diff_eq;
-    use diskann::graph::test::synthetic::Grid;
-    use diskann::{
+    use diskann_quantization::scalar::train::ScalarQuantizationParameters;
+    use diskann_utils::views::Matrix;
+    use diskann_vector::{
+        DistanceFunction, PureDistanceFunction,
+        distance::{Metric, SquaredL2},
+    };
+    use rand::{distr::Distribution, rngs::StdRng, seq::SliceRandom};
+    use rstest::rstest;
+    use webc_diskann::graph::test::synthetic::Grid;
+    use webc_diskann::{
         graph::{
             self, AdjacencyList, InplaceDeleteMethod, StartPointStrategy,
             config::IntraBatchCandidates,
@@ -179,14 +188,6 @@ pub(crate) mod tests {
         },
         utils::{IntoUsize, ONE},
     };
-    use diskann_quantization::scalar::train::ScalarQuantizationParameters;
-    use diskann_utils::{test_data_root, views::Matrix};
-    use diskann_vector::{
-        DistanceFunction, PureDistanceFunction,
-        distance::{Metric, SquaredL2},
-    };
-    use rand::{distr::Distribution, rngs::StdRng, seq::SliceRandom};
-    use rstest::rstest;
 
     use super::*;
     use crate::{
@@ -206,7 +207,7 @@ pub(crate) mod tests {
     };
 
     // Callbacks for use with `simplified_builder`.
-    fn no_modify(_: &mut diskann::graph::config::Builder) {}
+    fn no_modify(_: &mut webc_diskann::graph::config::Builder) {}
 
     /////////////////////////////////////////
     // Tests from the original async index //
@@ -1612,7 +1613,7 @@ pub(crate) mod tests {
         C: FnOnce(Arc<Matrix<f32>>, &[f32]) -> Arc<DiskANNIndex<DP>>,
         B: AsyncFnOnce(Arc<DiskANNIndex<DP>>, Arc<Matrix<f32>>),
         DP: DataProvider<Context = DefaultContext, ExternalId = u32>
-            + for<'a> diskann::provider::SetElement<&'a [f32]>,
+            + for<'a> webc_diskann::provider::SetElement<&'a [f32]>,
     {
         let storage = VirtualStorageProvider::new_overlay(test_data_root());
         let mut reader = storage.open_reader(file).unwrap();
@@ -1631,7 +1632,7 @@ pub(crate) mod tests {
     async fn build_using_single_insert<DP>(index: Arc<DiskANNIndex<DP>>, data: Arc<Matrix<f32>>)
     where
         DP: DataProvider<Context = DefaultContext, ExternalId = u32>
-            + for<'a> diskann::provider::SetElement<&'a [f32]>,
+            + for<'a> webc_diskann::provider::SetElement<&'a [f32]>,
         Quantized: for<'a> InsertStrategy<'a, DP, &'a [f32]> + Clone + Send + Sync,
     {
         let ctx = &DefaultContext;
@@ -2901,9 +2902,9 @@ pub(crate) mod tests {
     #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_inmemory_search_diversity_search() {
-        use diskann::neighbor::AttributeValueProvider;
         use rand::Rng;
         use std::collections::HashMap;
+        use webc_diskann::neighbor::AttributeValueProvider;
 
         // Simple test attribute provider
         #[derive(Debug, Clone)]
@@ -2920,7 +2921,7 @@ pub(crate) mod tests {
                 self.attributes.insert(id, attribute);
             }
         }
-        impl diskann::provider::HasId for TestAttributeProvider {
+        impl webc_diskann::provider::HasId for TestAttributeProvider {
             type Id = u32;
         }
 
@@ -2988,9 +2989,9 @@ pub(crate) mod tests {
         let mut indices = vec![0u32; return_list_size];
         let mut distances = vec![0f32; return_list_size];
         let mut result_output_buffer =
-            diskann::graph::IdDistance::new(&mut indices, &mut distances);
+            webc_diskann::graph::IdDistance::new(&mut indices, &mut distances);
 
-        let diverse_params = diskann::graph::search::DiverseSearchParams::new(
+        let diverse_params = webc_diskann::graph::search::DiverseSearchParams::new(
             0, // diverse_attribute_id
             diverse_results_k,
             return_list_size,
@@ -2998,14 +2999,14 @@ pub(crate) mod tests {
         )
         .unwrap();
 
-        let search_params = diskann::graph::search::Knn::new(
+        let search_params = webc_diskann::graph::search::Knn::new(
             search_list_size,
             None, // beam_width
         )
         .unwrap();
 
         let diverse_search =
-            diskann::graph::search::Diverse::new(search_params, diverse_params).unwrap();
+            webc_diskann::graph::search::Diverse::new(search_params, diverse_params).unwrap();
 
         let result = index
             .search(

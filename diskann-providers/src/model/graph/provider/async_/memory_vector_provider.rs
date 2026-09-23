@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
 use arc_swap::ArcSwap;
-use diskann::{ANNError, ANNResult, utils::VectorRepr};
+use webc_diskann::{ANNError, ANNResult, utils::VectorRepr};
 
 use super::{VectorGuard, common::TestCallCount};
 use crate::storage::{self, AsyncIndexMetadata, AsyncQuantLoadContext, LoadWith, SaveWith};

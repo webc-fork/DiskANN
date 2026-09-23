@@ -101,7 +101,7 @@ impl std::fmt::Display for InvalidPrefetch {
 
 impl std::error::Error for InvalidPrefetch {}
 
-diskann::convert_error!(InvalidPrefetch);
+webc_diskann::convert_error!(InvalidPrefetch);
 
 /// Prefetch data using a simple `for` loop.
 #[derive(Debug, Clone, Copy)]

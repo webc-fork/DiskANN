@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 [package]
-name = "diskann-providers"
+name = "webc-diskann-providers"
 version.workspace = true
 authors.workspace = true
 description.workspace = true
@@ -29,7 +29,7 @@ arc-swap.workspace = true
 tracing.workspace = true
 # The workspace entry opts out of default features so the async runtime backend
 # stays opt-in; the `tokio`/`compio` features below forward the backend choice.
-diskann = { workspace = true }
+webc-diskann = { workspace = true }
 diskann-utils = { workspace = true }
 diskann-quantization = { workspace = true, features = ["rayon"] }
 tokio = { workspace = true, features = ["rt", "rt-multi-thread"], optional = true }
@@ -41,7 +41,7 @@ vfs = { workspace = true, optional = true }
 
 [dev-dependencies]
 approx.workspace = true
-diskann = { workspace = true, features = ["testing"] }
+webc-diskann = { workspace = true, features = ["testing"] }
 diskann-utils = { workspace = true, features = ["testing"] }
 itertools.workspace = true
 tempfile.workspace = true
@@ -63,19 +63,19 @@ default = ["tokio", "tracing"]
 
 # Use the tokio runtime for the synchronous index wrappers and forwarded task
 # spawning (upstream default behavior).
-tokio = ["dep:tokio", "diskann/tokio"]
+tokio = ["dep:tokio", "webc-diskann/tokio"]
 
 # Use the compio (thread-per-core) runtime instead. When both `tokio` and
 # `compio` are enabled, `tokio` takes precedence to preserve upstream behavior.
 # At least one runtime backend must be enabled.
-compio = ["dep:compio", "diskann/compio"]
+compio = ["dep:compio", "webc-diskann/compio"]
 
 # Forward tracing instrumentation of the `diskann` crate (enabled by default,
 # matching the previous default-feature behavior).
-tracing = ["diskann/tracing"]
+tracing = ["webc-diskann/tracing"]
 
 testing = ["dep:tempfile"]
-experimental_diversity_search = ["diskann/experimental_diversity_search"]
+experimental_diversity_search = ["webc-diskann/experimental_diversity_search"]
 virtual_storage = ["dep:vfs"]
 
 # Some 'cfg's in the source tree will be flagged by `cargo clippy -j 2 --workspace --no-deps --all-targets -- -D warnings`

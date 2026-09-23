@@ -77,8 +77,8 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use diskann::utils::IntoUsize;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use webc_diskann::utils::IntoUsize;
 
 use crate::{epoch, num::IdLimit, store::Store};
 
@@ -297,9 +297,9 @@ impl Config {
 
 impl slots::SlotsConfig for Config {
     type Slots = Checked;
-    type Error = diskann::error::Infallible;
+    type Error = webc_diskann::error::Infallible;
 
-    fn build(self, id_limit: IdLimit) -> Result<Checked, diskann::error::Infallible> {
+    fn build(self, id_limit: IdLimit) -> Result<Checked, webc_diskann::error::Infallible> {
         Ok(Checked::new(id_limit))
     }
 }

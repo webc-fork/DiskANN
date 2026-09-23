@@ -3,11 +3,11 @@
  * Licensed under the MIT license.
  */
 
-use diskann::graph::search::Knn;
 use diskann_benchmark_core::recall::{RecallMetrics, Rows};
 use diskann_benchmark_runner::utils::fmt::KeyValue;
 use diskann_utils::views::Matrix;
 use serde::{Deserialize, Serialize};
+use webc_diskann::graph::search::Knn;
 
 use crate::{
     index::{Counters, Index, KnnSearch},

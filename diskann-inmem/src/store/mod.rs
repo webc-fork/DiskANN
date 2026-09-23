@@ -69,8 +69,8 @@ use std::{
     sync::atomic::Ordering,
 };
 
-use diskann::{ANNError, utils::IntoUsize};
 use thiserror::Error;
+use webc_diskann::{ANNError, utils::IntoUsize};
 
 use crate::{
     buffer::BufferError,
@@ -642,7 +642,7 @@ impl From<NeighborsError> for StoreError {
     }
 }
 
-diskann::convert_error!(StoreError);
+webc_diskann::convert_error!(StoreError);
 
 #[derive(Debug, Error)]
 enum StoreErrorInner {
@@ -681,7 +681,7 @@ pub(crate) enum RetireError {
     CouldNotClaimSlot,
 }
 
-diskann::convert_error!(RetireError);
+webc_diskann::convert_error!(RetireError);
 
 /// A writable buffer into the data managed by a [`Store`], obtained from [`Store::acquire`].
 ///
@@ -783,9 +783,9 @@ mod tests {
 
     impl slots::SlotsConfig for FaultyConfig {
         type Slots = Checked;
-        type Error = diskann::error::Infallible;
+        type Error = webc_diskann::error::Infallible;
 
-        fn build(self, id_limit: IdLimit) -> Result<Checked, diskann::error::Infallible> {
+        fn build(self, id_limit: IdLimit) -> Result<Checked, webc_diskann::error::Infallible> {
             let faulty = id_limit.value().checked_sub(1).unwrap_or(1);
             Ok(Checked::new(IdLimit::new(faulty)))
         }

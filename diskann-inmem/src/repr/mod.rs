@@ -9,8 +9,8 @@
 
 use std::num::NonZeroU16;
 
-use diskann::ANNResult;
 use thiserror::Error;
+use webc_diskann::ANNResult;
 
 use crate::{
     counters::LocalCounters,
@@ -137,7 +137,7 @@ pub trait Insert: Search + for<'a> Set<Self::Query<'a>> {
 //-----------------//
 
 /// Trait-object-based implementation of
-/// [`diskann::graph::glue::SearchAccessor::expand_beam`].
+/// [`webc_diskann::graph::glue::SearchAccessor::expand_beam`].
 ///
 /// Dynamic dispatch is used to enable aggressive specialization of this primitive without
 /// monomorphizing the entire search algorithm. Example specializations include:
@@ -175,7 +175,7 @@ pub(crate) unsafe trait ExpandBeam: Send + Sync + std::fmt::Debug {
     unsafe fn expand_beam(&self, list: &[u32], buffer: &mut [(u32, f32)]) -> ANNResult<usize>;
 }
 
-/// Trait-object-based implementation for [`diskann::graph::glue::PruneAccessor`].
+/// Trait-object-based implementation for [`webc_diskann::graph::glue::PruneAccessor`].
 ///
 /// [`Self::prepare`] assigns a [`PruneKey`] to each retrieved entry, allowing implementations
 /// to buffer data in a representation suitable for pruning. A prune session consists of one
@@ -240,4 +240,4 @@ impl PruneKey {
 #[error("prune list exceeded u16::MAX")]
 pub(crate) struct Overflow;
 
-diskann::convert_error!(Overflow);
+webc_diskann::convert_error!(Overflow);

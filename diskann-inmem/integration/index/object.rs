@@ -5,16 +5,16 @@
 
 use std::{future::Future, pin::Pin};
 
-use diskann::{
+use diskann_benchmark_runner::utils::fmt::KeyValue;
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
+use webc_diskann::{
     graph::{DiskANNIndex, search::Knn},
     neighbor::Neighbor,
     utils::IntoUsize,
 };
-use diskann_benchmark_runner::utils::fmt::KeyValue;
-use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
-use diskann_inmem::{Context, Provider, Strategy, integration, repr};
+use webc_diskann_inmem::{Context, Provider, Strategy, integration, repr};
 
 use crate::support::{
     check::{CheckMatch, Match, check_all_fields},
@@ -50,8 +50,8 @@ impl KnnSearch {
     }
 }
 
-impl From<diskann::graph::index::SearchStats> for KnnSearch {
-    fn from(stats: diskann::graph::index::SearchStats) -> Self {
+impl From<webc_diskann::graph::index::SearchStats> for KnnSearch {
+    fn from(stats: webc_diskann::graph::index::SearchStats) -> Self {
         Self {
             hops: stats.hops.into_usize(),
             cmps: stats.cmps.into_usize(),

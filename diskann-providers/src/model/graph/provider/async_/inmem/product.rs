@@ -5,8 +5,10 @@
 
 use std::future::Future;
 
-use diskann::default_post_processor;
-use diskann::{
+use diskann_utils::future::AsyncFriendly;
+use diskann_vector::{PreprocessedDistanceFunction, distance::Metric};
+use webc_diskann::default_post_processor;
+use webc_diskann::{
     ANNError, ANNResult,
     error::IntoANNResult,
     graph::{
@@ -20,8 +22,6 @@ use diskann::{
     provider::{ExecutionContext, HasId},
     utils::{IntoUsize, VectorRepr},
 };
-use diskann_utils::future::AsyncFriendly;
-use diskann_vector::{PreprocessedDistanceFunction, distance::Metric};
 
 use crate::model::{
     graph::provider::async_::{
@@ -402,7 +402,7 @@ where
     Ctx: ExecutionContext,
 {
     type PruneAccessor<'a> = HybridPruneAccessor<'a, T>;
-    type PruneAccessorError = diskann::error::Infallible;
+    type PruneAccessorError = webc_diskann::error::Infallible;
 
     fn prune_accessor<'a>(
         &'a self,
@@ -472,7 +472,7 @@ where
         >,
 {
     type Seed = ();
-    type FinishError = diskann::error::Infallible;
+    type FinishError = webc_diskann::error::Infallible;
     type PruneStrategy = Self;
     type InsertStrategy = Self;
 
@@ -586,7 +586,7 @@ where
     Ctx: ExecutionContext,
 {
     type PruneAccessor<'a> = PruneAccessor<'a>;
-    type PruneAccessorError = diskann::error::Infallible;
+    type PruneAccessorError = webc_diskann::error::Infallible;
 
     fn prune_accessor<'a>(
         &'a self,
@@ -642,7 +642,7 @@ where
         >,
 {
     type Seed = ();
-    type FinishError = diskann::error::Infallible;
+    type FinishError = webc_diskann::error::Infallible;
     type PruneStrategy = Self;
     type InsertStrategy = Self;
 
@@ -677,8 +677,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use diskann::utils::VectorRepr;
     use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
+    use webc_diskann::utils::VectorRepr;
 
     use crate::model::{
         graph::provider::async_::{

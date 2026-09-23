@@ -3,15 +3,18 @@
  * Licensed under the MIT license.
  */
 
-use diskann::ANNError;
-use diskann_utils::strided;
+use diskann_utils::{strided, views::DenseData};
+use webc_diskann::ANNError;
 
 use crate::utils::Bridge;
 
-impl From<Bridge<strided::TryFromError>> for ANNError {
+// crates.io `diskann-utils` 0.59.0 models `strided::TryFromError` as a generic
+// struct carrying the borrowed data; flatten it to the `'static` light variant
+// so it can enter an `ANNError`.
+impl<T: DenseData> From<Bridge<strided::TryFromError<T>>> for ANNError {
     #[track_caller]
-    fn from(value: Bridge<strided::TryFromError>) -> Self {
-        ANNError::new(value.into_inner())
+    fn from(value: Bridge<strided::TryFromError<T>>) -> Self {
+        ANNError::new(value.into_inner().as_static())
     }
 }
 
@@ -32,7 +35,7 @@ mod tests {
         let x = vec![u8::default(); nrows * ncols];
 
         // Provided the incorrect dimensions.
-        let err = strided::Strided::try_from_data(&x, nrows, ncols + 1, ncols + 1)
+        let err = strided::StridedView::try_shrink_from(&x, nrows, ncols + 1, ncols + 1)
             .bridge_err()
             .unwrap_err();
         let message = format!("{}", err);

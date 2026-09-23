@@ -5,8 +5,8 @@
 
 use std::{fmt::Debug, future::Future};
 
-use diskann::default_post_processor;
-use diskann::{
+use webc_diskann::default_post_processor;
+use webc_diskann::{
     ANNError, ANNResult,
     error::IntoANNResult,
     graph::{
@@ -512,7 +512,7 @@ where
     Ctx: ExecutionContext,
 {
     type PruneAccessor<'a> = PruneAccessor<'a, T>;
-    type PruneAccessorError = diskann::error::Infallible;
+    type PruneAccessorError = webc_diskann::error::Infallible;
 
     fn prune_accessor<'a>(
         &'a self,
@@ -572,7 +572,7 @@ where
         >,
 {
     type Seed = ();
-    type FinishError = diskann::error::Infallible;
+    type FinishError = webc_diskann::error::Infallible;
     type PruneStrategy = Self;
     type InsertStrategy = Self;
 

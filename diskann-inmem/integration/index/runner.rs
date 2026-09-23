@@ -6,7 +6,6 @@
 use std::{io::Write, sync::Arc};
 
 use anyhow::Context;
-use diskann::graph::{DiskANNIndex, search::Knn};
 use diskann_benchmark_runner::{
     Checker, Checkpoint, Output, Registry, RegistryError,
     benchmark::{MatchContext, PassFail, Regression, Score},
@@ -16,8 +15,9 @@ use diskann_benchmark_runner::{
 use diskann_utils::views::Matrix;
 use diskann_vector::distance::Metric;
 use serde::{Deserialize, Serialize};
+use webc_diskann::graph::{DiskANNIndex, search::Knn};
 
-use diskann_inmem::{
+use webc_diskann_inmem::{
     Provider,
     num::{Capacity, MaxDegree},
     repr::Full,
@@ -252,7 +252,7 @@ impl Representation {
 
 #[derive(Debug)]
 struct Build {
-    config: diskann::graph::Config,
+    config: webc_diskann::graph::Config,
 }
 
 impl Build {
@@ -264,9 +264,9 @@ impl Build {
             alpha,
         } = raw;
 
-        let config = diskann::graph::config::Builder::new_with(
+        let config = webc_diskann::graph::config::Builder::new_with(
             pruned_degree,
-            diskann::graph::config::MaxDegree::new(max_degree),
+            webc_diskann::graph::config::MaxDegree::new(max_degree),
             l_build,
             metric.into(),
             |b| {
@@ -419,9 +419,9 @@ impl Test {
     }
 }
 
-fn finish<DP>(provider: DP, config: diskann::graph::Config) -> Arc<dyn Index>
+fn finish<DP>(provider: DP, config: webc_diskann::graph::Config) -> Arc<dyn Index>
 where
-    DP: diskann::provider::DataProvider,
+    DP: webc_diskann::provider::DataProvider,
     DiskANNIndex<DP>: Index,
 {
     Arc::new(DiskANNIndex::new(config, provider, None))

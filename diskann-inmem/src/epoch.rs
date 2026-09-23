@@ -52,8 +52,8 @@ use std::{
 };
 
 use crossbeam_queue::SegQueue;
-use diskann::utils::IntoUsize;
 use parking_lot::{Mutex, MutexGuard};
+use webc_diskann::utils::IntoUsize;
 
 const DEFAULT_GUARD_SLOTS: NonZeroUsize = NonZeroUsize::new(256).unwrap();
 
@@ -439,7 +439,7 @@ impl std::fmt::Display for Unavailable {
 
 impl std::error::Error for Unavailable {}
 
-diskann::convert_error!(Unavailable);
+webc_diskann::convert_error!(Unavailable);
 
 // Delays
 //

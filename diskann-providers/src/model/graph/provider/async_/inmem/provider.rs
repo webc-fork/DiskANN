@@ -6,7 +6,9 @@
 use std::{fmt::Debug, future::Future, num::NonZeroUsize};
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
-use diskann::{
+use diskann_utils::{future::AsyncFriendly, lazy_format};
+use diskann_vector::distance::Metric;
+use webc_diskann::{
     ANNError, ANNResult,
     graph::AdjacencyList,
     provider::{
@@ -15,8 +17,6 @@ use diskann::{
     },
     utils::{IntoUsize, ONE, VectorRepr},
 };
-use diskann_utils::{future::AsyncFriendly, lazy_format};
-use diskann_vector::distance::Metric;
 
 use crate::{
     model::graph::provider::async_::{
@@ -98,7 +98,7 @@ use crate::{
 /// ```
 /// use std::num::NonZeroUsize;
 ///
-/// use diskann::provider::DefaultContext;
+/// use webc_diskann::provider::DefaultContext;
 /// use diskann_providers::model::graph::provider::async_::{
 ///     inmem::{
 ///         DefaultProvider, DefaultProviderParameters,
@@ -137,7 +137,7 @@ use crate::{
 /// ```
 /// use std::num::NonZeroUsize;
 ///
-/// use diskann::provider::DefaultContext;
+/// use webc_diskann::provider::DefaultContext;
 /// use diskann_providers::model::{
 ///     pq::FixedChunkPQTable,
 ///     graph::provider::async_::{
@@ -186,7 +186,7 @@ use crate::{
 /// ```
 /// use std::num::NonZeroUsize;
 ///
-/// use diskann::provider::DefaultContext;
+/// use webc_diskann::provider::DefaultContext;
 /// use diskann_providers::model::{
 ///     pq::FixedChunkPQTable,
 ///     graph::provider::async_::{

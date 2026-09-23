@@ -14,10 +14,10 @@
 use std::sync::{Arc, Mutex};
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
-use diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 use diskann_quantization::CompressInto;
 use diskann_utils::object_pool::ObjectPool;
 use diskann_vector::distance::Metric;
+use webc_diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 
 use super::common::{AlignedMemoryVectorStore, TestCallCount};
 use crate::{
@@ -381,8 +381,8 @@ impl storage::bin::GetData for FastMemoryQuantVectorProviderAsync {
 #[cfg(test)]
 mod tests {
     use crate::storage::VirtualStorageProvider;
-    use diskann::utils::ONE;
     use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
+    use webc_diskann::utils::ONE;
 
     use super::*;
 

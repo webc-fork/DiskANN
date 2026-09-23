@@ -4,7 +4,7 @@
  */
 
 //! Layers that can be added to existing strategies such as
-//! [`diskann::graph::glue::SearchStrategy`].
+//! [`webc_diskann::graph::glue::SearchStrategy`].
 //!
 //! Implementations:
 //!

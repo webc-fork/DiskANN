@@ -5,9 +5,9 @@
 
 use std::sync::Arc;
 
-use diskann::{ANNError, ANNResult};
 use diskann_utils::{lazy_format, object_pool::ObjectPool};
 use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
+use webc_diskann::{ANNError, ANNResult};
 
 // Concrete implementations
 use super::{Shared, cosine::DirectCosine, innerproduct::TableIP, l2::TableL2};

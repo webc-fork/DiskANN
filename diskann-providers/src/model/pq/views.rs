@@ -3,8 +3,8 @@
  * Licensed under the MIT license.
  */
 
-use diskann::{ANNError, convert_error};
 use diskann_utils::views;
+use webc_diskann::{ANNError, convert_error};
 
 use crate::utils::Bridge;
 

@@ -37,7 +37,6 @@ mod internal_docs {
 
 use std::{fmt::Debug, marker::PhantomData, num::NonZeroUsize};
 
-use diskann::{ANNError, ANNResult, utils::IntoUsize};
 use diskann_utils::views::Matrix;
 use diskann_vector::{
     UnalignedSlice,
@@ -52,6 +51,7 @@ use diskann_wide::{
 };
 use half::f16;
 use thiserror::Error;
+use webc_diskann::{ANNError, ANNResult, utils::IntoUsize};
 
 use crate::{
     counters::LocalCounters,
@@ -153,7 +153,7 @@ impl<T> Config<T> {
     /// Set the prefetch lookahead.
     ///
     /// This controls how many iterations ahead in
-    /// [`diskann::graph::glue::SearchAccessor::expand_beam`] data is prefetched into the CPU
+    /// [`webc_diskann::graph::glue::SearchAccessor::expand_beam`] data is prefetched into the CPU
     /// cache. Passing `None` disables prefetching.
     pub fn prefetch(mut self, lookahead: Option<NonZeroUsize>) -> Self {
         self.lookahead = lookahead;
@@ -187,7 +187,7 @@ pub enum ConfigError {
     DimTooLarge(usize),
 }
 
-diskann::convert_error!(ConfigError);
+webc_diskann::convert_error!(ConfigError);
 
 impl<T> repr::RepresentationConfig for Config<T>
 where
@@ -691,7 +691,7 @@ where
 #[error("index {} is out-of-bounds", self.0)]
 struct OutOfBounds(u32);
 
-diskann::convert_error!(OutOfBounds);
+webc_diskann::convert_error!(OutOfBounds);
 
 #[derive(Debug, Error)]
 #[error(
@@ -704,7 +704,7 @@ struct ExpandBeamError {
     xlen: usize,
 }
 
-diskann::convert_error!(ExpandBeamError);
+webc_diskann::convert_error!(ExpandBeamError);
 
 //-------//
 // Prune //

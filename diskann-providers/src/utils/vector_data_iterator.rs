@@ -10,12 +10,12 @@ use std::{
 };
 
 use crate::storage::StorageReadProvider;
-use diskann::utils::read_exact_into;
 use diskann_utils::io::Metadata;
 use serde::Deserialize;
 use thiserror::Error;
+use webc_diskann::utils::read_exact_into;
 
-use diskann::utils::VectorRepr;
+use webc_diskann::utils::VectorRepr;
 
 /// An iterator over the vector and associated data pairs in a dataset loaded from the storage provider.
 ///
@@ -205,7 +205,7 @@ enum SkipElementsError {
     IoError(#[from] std::io::Error),
 }
 
-diskann::convert_error!(SkipElementsError);
+webc_diskann::convert_error!(SkipElementsError);
 
 #[cfg(test)]
 mod tests {
@@ -213,7 +213,7 @@ mod tests {
 
     use std::io::Cursor;
 
-    use diskann::ANNError;
+    use webc_diskann::ANNError;
 
     const TEST_VECTOR_STREAM: &str = "vector";
     const TEST_ASSOCIATED_DATA_STREAM: &str = "associated_data";

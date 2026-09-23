@@ -62,11 +62,11 @@ pub mod pq {
     //!
     //! During hybrid PQ pruning, each candidate is represented as either a full-precision
     //! vector or a PQ-compressed code. The [`Hybrid`] enum captures this duality, and the
-    //! remaining types adapt it to the [`workingset`](diskann::graph::workingset) framework.
+    //! remaining types adapt it to the [`workingset`](webc_diskann::graph::workingset) framework.
 
-    use diskann::utils::VectorRepr;
     use diskann_utils::Reborrow;
     use diskann_vector::DistanceFunction;
+    use webc_diskann::utils::VectorRepr;
 
     use crate::model::pq;
 

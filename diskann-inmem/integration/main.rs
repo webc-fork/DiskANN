@@ -3,7 +3,7 @@
  * Licensed under the MIT license.
  */
 
-//! Integration test runner for [`diskann_inmem`].
+//! Integration test runner for [`webc_diskann_inmem`].
 
 mod index;
 mod store;

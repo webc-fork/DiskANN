@@ -9,8 +9,8 @@
 use std::io::Read;
 
 use crate::storage::StorageReadProvider;
-use diskann::{ANNError, ANNResult, utils::IntoUsize};
 use diskann_utils::{io::Metadata, lazy_format, views::Matrix};
+use webc_diskann::{ANNError, ANNResult, utils::IntoUsize};
 
 /// Read metadata of data file.
 pub fn load_metadata_from_file<ReadProvider: StorageReadProvider>(

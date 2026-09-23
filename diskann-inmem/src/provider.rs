@@ -14,7 +14,7 @@
 //!
 //! Known areas for future work:
 //!
-//! * Insert and delete protection: The [`DiskANNIndex`](diskann::graph::DiskANNIndex) doesn't
+//! * Insert and delete protection: The [`DiskANNIndex`](webc_diskann::graph::DiskANNIndex) doesn't
 //!   support ergonomic insert or delete guards to protect slots during insert or delete
 //!   operations. This leaves open a situation where an item can be inserted and during
 //!   the insertion algorithm, it is deleted, and then re-inserted.
@@ -32,7 +32,7 @@
 
 use std::hash::Hash;
 
-use diskann::{
+use webc_diskann::{
     ANNError, ANNResult,
     graph::{
         AdjacencyList, SearchOutputBuffer,
@@ -121,13 +121,13 @@ where
 // Data Provider //
 ///////////////////
 
-/// A zero-sized [`diskann::provider::ExecutionContext`] for [`Provider`].
+/// A zero-sized [`webc_diskann::provider::ExecutionContext`] for [`Provider`].
 #[derive(Debug, Clone, Default)]
 pub struct Context;
 
-impl diskann::provider::ExecutionContext for Context {}
+impl webc_diskann::provider::ExecutionContext for Context {}
 
-impl<T, M> diskann::provider::DataProvider for Provider<T, M>
+impl<T, M> webc_diskann::provider::DataProvider for Provider<T, M>
 where
     T: Send + Sync + 'static,
     M: Id,
@@ -136,7 +136,7 @@ where
     type InternalId = u32;
     type ExternalId = M;
     type Error = ANNError;
-    type Guard = diskann::provider::NoopGuard<u32>;
+    type Guard = webc_diskann::provider::NoopGuard<u32>;
 
     fn to_internal_id(
         &self,
@@ -167,7 +167,7 @@ where
 //
 // `diskann` has plans to move deletion checks behind an accessor trait, which will help
 // with this situation.
-impl<R, M> diskann::provider::Delete for Provider<R, M>
+impl<R, M> webc_diskann::provider::Delete for Provider<R, M>
 where
     R: repr::Representation,
     M: Id,
@@ -202,10 +202,10 @@ where
         &self,
         _context: &Context,
         id: u32,
-    ) -> ANNResult<diskann::provider::ElementStatus> {
+    ) -> ANNResult<webc_diskann::provider::ElementStatus> {
         match <R as repr::Representation>::is_readable(&self.representation, id) {
-            Some(true) => Ok(diskann::provider::ElementStatus::Valid),
-            Some(false) => Ok(diskann::provider::ElementStatus::Deleted),
+            Some(true) => Ok(webc_diskann::provider::ElementStatus::Valid),
+            Some(false) => Ok(webc_diskann::provider::ElementStatus::Deleted),
             None => Err(ANNError::message("accessed invalid internal ID")),
         }
     }
@@ -214,11 +214,11 @@ where
         &self,
         _context: &Context,
         gid: &M,
-    ) -> ANNResult<diskann::provider::ElementStatus> {
+    ) -> ANNResult<webc_diskann::provider::ElementStatus> {
         if self.mapping.contains_external(gid) {
-            Ok(diskann::provider::ElementStatus::Valid)
+            Ok(webc_diskann::provider::ElementStatus::Valid)
         } else {
-            Ok(diskann::provider::ElementStatus::Deleted)
+            Ok(webc_diskann::provider::ElementStatus::Deleted)
         }
     }
 }
@@ -230,7 +230,7 @@ where
     std::future::ready(f())
 }
 
-impl<T, R, M> diskann::provider::SetElement<T> for Provider<R, M>
+impl<T, R, M> webc_diskann::provider::SetElement<T> for Provider<R, M>
 where
     R: repr::Set<T>,
     M: Id,
@@ -263,7 +263,7 @@ where
             // is not expected to be enabled for general use.
             self.local_counters().set_vector(1);
 
-            Ok(diskann::provider::NoopGuard::new(internal))
+            Ok(webc_diskann::provider::NoopGuard::new(internal))
         };
 
         ready(work)
@@ -315,7 +315,7 @@ impl<'a> SearchAccessor<'a> {
     }
 }
 
-impl diskann::provider::HasId for SearchAccessor<'_> {
+impl webc_diskann::provider::HasId for SearchAccessor<'_> {
     type Id = u32;
 }
 
@@ -465,7 +465,7 @@ impl diskann_vector::DistanceFunction<ElementRef, ElementRef, f32> for Distance<
     }
 }
 
-impl diskann::provider::HasId for PruneAccessor<'_> {
+impl webc_diskann::provider::HasId for PruneAccessor<'_> {
     type Id = u32;
 }
 
@@ -677,7 +677,7 @@ where
     R: repr::Search,
     M: Id,
 {
-    diskann::default_post_processor!(Translate<R, M>);
+    webc_diskann::default_post_processor!(Translate<R, M>);
 }
 
 impl<R, M> glue::PruneStrategy<Provider<R, M>> for Strategy
@@ -772,13 +772,13 @@ where
 mod tests {
     use super::*;
 
-    use diskann::{
+    use diskann_utils::views::Matrix;
+    use diskann_vector::distance::Metric;
+    use webc_diskann::{
         graph::{DiskANNIndex, InplaceDeleteMethod, search::Knn, test::synthetic::Grid},
         neighbor::Neighbor,
         provider::{DataProvider, Delete},
     };
-    use diskann_utils::views::Matrix;
-    use diskann_vector::distance::Metric;
 
     use crate::num::Capacity;
 
@@ -822,9 +822,9 @@ mod tests {
         let provider = Provider::<_, u64>::new(config).unwrap();
         assert_eq!(provider.max_degree(), MaxDegree::new(degree));
 
-        let config = diskann::graph::config::Builder::new(
+        let config = webc_diskann::graph::config::Builder::new(
             2 * (grid.dim() as usize),
-            diskann::graph::config::MaxDegree::new(provider.max_degree().value()),
+            webc_diskann::graph::config::MaxDegree::new(provider.max_degree().value()),
             10,
             (Metric::L2).into(),
         )
@@ -999,5 +999,4 @@ mod tests {
             .unwrap()
             .block_on(smoke_flow());
     }
-
 }
