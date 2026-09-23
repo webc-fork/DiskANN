@@ -1366,6 +1366,7 @@ where
                     let vector_id = self
                         .data_provider
                         .to_internal_id(context, chunk.get(i))
+                        .await
                         .escalate("id translation for `inplace_delete` must succeed")?;
                     ids_to_delete.insert(vector_id);
                 }
@@ -1543,6 +1544,7 @@ where
             let vector_id = self
                 .data_provider
                 .to_internal_id(context, id)
+                .await
                 .escalate("id translation for `inplace_delete` must succeed")?;
 
             let edges_to_add = self
@@ -1601,6 +1603,7 @@ where
             let vector_id = self
                 .data_provider
                 .to_internal_id(context, id)
+                .await
                 .escalate("id translation for `inplace_delete` must succeed")?;
 
             // For VisitedAndTopK, we must capture the delete element *before* erasing

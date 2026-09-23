@@ -673,7 +673,7 @@ impl provider::DataProvider for Provider {
     type Error = InvalidId;
     type Guard = provider::NoopGuard<u32>;
 
-    fn to_internal_id(&self, _context: &Context, gid: &u32) -> Result<u32, InvalidId> {
+    async fn to_internal_id(&self, _context: &Context, gid: &u32) -> Result<u32, InvalidId> {
         let valid = self.terms.contains_key(gid);
         if valid {
             Ok(*gid)
@@ -682,7 +682,7 @@ impl provider::DataProvider for Provider {
         }
     }
 
-    fn to_external_id(&self, _context: &Context, id: u32) -> Result<u32, InvalidId> {
+    async fn to_external_id(&self, _context: &Context, id: u32) -> Result<u32, InvalidId> {
         let valid = self.terms.contains_key(&id);
         if valid {
             Ok(id)
@@ -1740,18 +1740,33 @@ mod tests {
     fn id_conversion() {
         use provider::DataProvider;
 
+        // Backend-agnostic blocking: this mapping test runs under both the
+        // tokio and compio builds.
+        fn block_on<F: std::future::Future>(future: F) -> F::Output {
+            #[cfg(feature = "tokio")]
+            {
+                crate::test::tokio::current_thread_runtime().block_on(future)
+            }
+            #[cfg(all(feature = "compio", not(feature = "tokio")))]
+            {
+                compio::runtime::Runtime::new()
+                    .expect("compio runtime initialization should succeed for tests")
+                    .block_on(future)
+            }
+        }
+
         let provider = create_test_provider();
 
         let context = Context::default();
         for i in 0u32..3u32 {
-            let internal = provider.to_internal_id(&context, &i).unwrap();
+            let internal = block_on(provider.to_internal_id(&context, &i)).unwrap();
             assert_eq!(internal, i);
 
-            let external = provider.to_external_id(&context, i).unwrap();
+            let external = block_on(provider.to_external_id(&context, i)).unwrap();
             assert_eq!(external, i);
         }
 
-        let err = provider.to_internal_id(&context, &5).unwrap_err();
+        let err = block_on(provider.to_internal_id(&context, &5)).unwrap_err();
         let message = err.to_string();
         assert_eq!(
             message, "external id 5 is not initialized",
@@ -1759,7 +1774,7 @@ mod tests {
             message
         );
 
-        let err = provider.to_external_id(&context, 5).unwrap_err();
+        let err = block_on(provider.to_external_id(&context, 5)).unwrap_err();
         let message = err.to_string();
         assert_eq!(
             message, "internal id 5 is not initialized",

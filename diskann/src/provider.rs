@@ -137,18 +137,24 @@ pub trait DataProvider: Sized + Send + Sync + 'static {
     ///
     /// The vector referenced by `gid` must already have been added to the provider via
     /// [`SetElement`]. The mapping is undefined until then.
+    ///
+    /// The translation is async so that implementations whose id mapping is not
+    /// fully in-memory (e.g. spilling cold buckets to secondary storage) can
+    /// resolve it without blocking the executor.
     fn to_internal_id(
         &self,
         context: &Self::Context,
         gid: &Self::ExternalId,
-    ) -> Result<Self::InternalId, Self::Error>;
+    ) -> impl std::future::Future<Output = Result<Self::InternalId, Self::Error>> + Send;
 
     /// Translate an internal id to its corresponding external id.
+    ///
+    /// Async for the same reason as [`Self::to_internal_id`].
     fn to_external_id(
         &self,
         context: &Self::Context,
         id: Self::InternalId,
-    ) -> Result<Self::ExternalId, Self::Error>;
+    ) -> impl std::future::Future<Output = Result<Self::ExternalId, Self::Error>> + Send;
 }
 
 ////////////
