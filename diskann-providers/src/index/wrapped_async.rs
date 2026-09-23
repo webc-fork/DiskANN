@@ -696,6 +696,19 @@ mod tests {
 
     #[test]
     fn test_save_then_sync_load_round_trip() {
+        // compio: the wrapper resolves the worker thread's own runtime on
+        // every blocking call, so the flow must run inside that runtime's
+        // context. tokio (default): the wrapper builds its own runtime.
+        #[cfg(all(feature = "compio", not(feature = "tokio")))]
+        {
+            let rt = compio::runtime::Runtime::new().unwrap();
+            rt.enter(run_round_trip);
+        }
+        #[cfg(any(feature = "tokio", not(feature = "compio")))]
+        run_round_trip();
+    }
+
+    fn run_round_trip() {
         // -- Build an index in async context and save it -----------------------
         let save_path = "/index";
         let file_path = "/sift/siftsmall_learn_256pts.fbin";
@@ -908,6 +921,18 @@ mod tests {
         );
     }
 
+    // The wrapped index is shared across worker threads (thread-per-core:
+    // one compio runtime per thread); neither backend facade may smuggle in
+    // thread-bound state such as compio's `Rc`-shared executor.
+    #[test]
+    fn test_wrapper_types_are_send_sync() {
+        fn assert_send_sync<T: Send + Sync>() {}
+
+        assert_send_sync::<crate::runtime::Runtime>();
+        assert_send_sync::<crate::runtime::Handle>();
+        assert_send_sync::<DiskANNIndex<graph::test::provider::Provider>>();
+    }
+
     // End-to-end proof for the `compio` backend: with tokio disabled, the
     // synchronous wrapper builds an index through the parallel `multi_insert`
     // path (exercising backend task spawning), saves, reloads and searches it
@@ -916,6 +941,18 @@ mod tests {
     #[cfg(all(feature = "compio", not(feature = "tokio")))]
     #[test]
     fn test_compio_backend_end_to_end() {
+        use rand::{Rng, SeedableRng};
+
+        // Worker-thread shape: the thread owns the compio runtime and every
+        // wrapper call resolves it through the current-runtime context.
+        let rt = compio::runtime::Runtime::new().unwrap();
+        rt.enter(move || {
+            run_compio_end_to_end();
+        });
+    }
+
+    #[cfg(all(feature = "compio", not(feature = "tokio")))]
+    fn run_compio_end_to_end() {
         use rand::{Rng, SeedableRng};
 
         const DIM: usize = 16;

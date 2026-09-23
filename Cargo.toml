@@ -16,7 +16,7 @@ members = [
 exclude = ["vectorset"]
 
 [workspace.package]
-version = "0.59.0-webc.2" # Obeying semver; webc pre-release of upstream 0.59.0
+version = "0.59.0-webc.3" # Obeying semver; webc pre-release of upstream 0.59.0
 description = "DiskANN3 is a composable library for bringing scalable, accurate and cost-effective vector indexing to multiple databases."
 authors = ["Microsoft"]
 repository = "https://github.com/webc-fork/DiskANN"
