@@ -16,12 +16,11 @@ members = [
 exclude = ["vectorset"]
 
 [workspace.package]
-version = "0.59.0-webc.3" # Obeying semver; webc pre-release of upstream 0.59.0
+version = "0.59.0-webc.4" # Obeying semver; webc pre-release of upstream 0.59.0
 description = "DiskANN3 is a composable library for bringing scalable, accurate and cost-effective vector indexing to multiple databases."
 authors = ["Microsoft"]
 repository = "https://github.com/webc-fork/DiskANN"
 license = "MIT"
-edition = "2021"
 
 [workspace.lints.clippy]
 allow_attributes = "warn"
@@ -31,7 +30,7 @@ undocumented_unsafe_blocks = "warn"
 # Renamed, runtime-agnostic release crates (this branch only).
 # Default features are opt-in so that runtime-backend selection can be forwarded
 # by depending crates (see the `tokio`/`compio` features).
-webc-diskann = { path = "diskann", default-features = false, version = "0.59.0-webc.2" }
+webc-diskann = { path = "diskann", default-features = false, version = "=0.59.0-webc.4" }
 
 # Unrenamed sibling crates are consumed from crates.io (upstream 0.59.0).
 diskann-utils = { version = "0.59.0", default-features = false }

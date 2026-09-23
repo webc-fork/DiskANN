@@ -15,8 +15,16 @@
 //! `tokio::spawn` and `tokio::task::JoinSet`, preserving upstream behavior.
 //! Under the `compio` feature, the same semantics are provided on top of
 //! `compio::runtime`'s thread-per-core runtime (`Runtime::spawn` +
-//! `block_on`; compio keeps no detached task registry, so `JoinSet` joins its
-//! tasks in FIFO order instead of completion order).
+//! `block_on`):
+//!
+//! * spawning resolves the *calling thread's* runtime, matching compio's
+//!   thread-per-core execution model (each worker thread runs its own
+//!   runtime);
+//! * compio keeps no detached task registry, so `JoinSet` joins its tasks in
+//!   FIFO order instead of completion order;
+//! * dropping the last handle to a compio task cancels it (tokio detaches
+//!   instead) — call sites always join their tasks, so this is not
+//!   observable.
 //!
 //! When both features are enabled, `tokio` wins so that existing users observe
 //! no change. Compiling without either backend fails with a `compile_error!`
@@ -72,8 +80,11 @@ impl std::error::Error for JoinError {}
 
 /// A handle for awaiting the output of a spawned task.
 ///
-/// Dropping all handles to a task may cancel it, mirroring the semantics of
-/// both backends.
+/// Backend note: dropping a tokio handle *detaches* the task (it keeps
+/// running), while dropping the last compio handle *cancels* the task. All
+/// current call sites join every spawned handle, so neither behavior is
+/// observable through this crate; do not rely on drop alone to keep a task
+/// running under `compio`.
 #[derive(Debug)]
 pub(crate) struct JoinHandle<T>(InnerJoin<T>);
 

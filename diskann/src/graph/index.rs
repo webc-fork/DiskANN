@@ -870,11 +870,14 @@ where
                     let work_clone = work.clone();
 
                     let future = async move {
+                        // Deref `Arc<B>` to `&B` explicitly; see the note on the
+                        // `set_chunk` call above about the next-generation trait
+                        // solver and deref-coercion-based inference.
                         self_clone
                             .search_and_prune_batch(
                                 &*strategy_clone,
                                 &context_clone,
-                                &vectors_clone,
+                                &*vectors_clone,
                                 &work_clone,
                                 &seed_clone,
                             )
@@ -886,7 +889,7 @@ where
 
             // Defer dealing with the `result` until after we have joined the other tasks.
             let mut edges = match self
-                .search_and_prune_batch(&*strategy, context, &vectors, &work, &seed)
+                .search_and_prune_batch(&*strategy, context, &*vectors, &work, &seed)
                 .await
             {
                 Ok(v) => v,
