@@ -504,8 +504,14 @@ where
 
                     // The task assigned to each round of `set_element`.
                     let future = async move {
+                        // Deref `Arc<B>` to `&B` explicitly: the next-generation
+                        // trait solver (rustc nightly ~1.100) no longer applies
+                        // deref coercion while unifying `&Arc<B>` against the
+                        // `&B` parameter, so the argument type would be inferred
+                        // as `B := Arc<B>` and the unimplemented `Arc<B>: Batch`
+                        // bound would be rejected.
                         self_clone
-                            .set_chunk(&context_clone, &batch_clone, &ids_clone, r)
+                            .set_chunk(&context_clone, &*batch_clone, &ids_clone, r)
                             .await
                     };
 

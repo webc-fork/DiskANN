@@ -1808,7 +1808,7 @@ dependencies = [
 
 [[package]]
 name = "webc-diskann"
-version = "0.59.0-webc.1"
+version = "0.59.0-webc.2"
 dependencies = [
  "anyhow",
  "bytemuck",
@@ -1833,7 +1833,7 @@ dependencies = [
 
 [[package]]
 name = "webc-diskann-inmem"
-version = "0.59.0-webc.1"
+version = "0.59.0-webc.2"
 dependencies = [
  "anyhow",
  "bytemuck",
@@ -1859,7 +1859,7 @@ dependencies = [
 
 [[package]]
 name = "webc-diskann-providers"
-version = "0.59.0-webc.1"
+version = "0.59.0-webc.2"
 dependencies = [
  "approx",
  "arc-swap",
