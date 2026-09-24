@@ -148,6 +148,62 @@ where
 /// and `Err` paths.
 type BatchResult<T> = Result<T, (T, ANNError)>;
 
+/// Collects results from unit-returning worker tasks, logging any task-level errors
+/// while tracking and propagating the first task dispatch failure.
+fn collect_unit_results<E: std::fmt::Display>(
+    results: impl IntoIterator<Item = ANNResult<Result<(), E>>>,
+    op_name: &str,
+) -> ANNResult<()> {
+    let mut dispatch_err = None;
+    for result in results {
+        match result {
+            Ok(Ok(())) => {}
+            Ok(Err(err)) => {
+                tracked_error!("Error in `{op_name}`: {err}");
+            }
+            Err(err) => {
+                tracked_error!("{op_name} task dispatch failed: {err}");
+                if dispatch_err.is_none() {
+                    dispatch_err = Some(err);
+                }
+            }
+        }
+    }
+    if let Some(err) = dispatch_err {
+        return Err(err);
+    }
+    Ok(())
+}
+
+/// Drains partial vectors from worker tasks into `target`, logging any task-level errors
+/// while tracking and propagating the first task dispatch failure.
+fn collect_batch_vecs<T>(
+    target: &mut Vec<T>,
+    results: impl IntoIterator<Item = ANNResult<BatchResult<Vec<T>>>>,
+    op_name: &str,
+) -> ANNResult<()> {
+    let mut dispatch_err = None;
+    for result in results {
+        match result {
+            Ok(Ok(mut v)) => target.append(&mut v),
+            Ok(Err((mut v, err))) => {
+                target.append(&mut v);
+                tracked_error!("{op_name} task failed: {err}");
+            }
+            Err(err) => {
+                tracked_error!("{op_name} task dispatch failed: {err}");
+                if dispatch_err.is_none() {
+                    dispatch_err = Some(err);
+                }
+            }
+        }
+    }
+    if let Some(err) = dispatch_err {
+        return Err(err);
+    }
+    Ok(())
+}
+
 impl<DP> DiskANNIndex<DP>
 where
     DP: DataProvider,
@@ -727,21 +783,12 @@ where
             let mut next = match local_result {
                 Ok(v) => v,
                 Err((v, err)) => {
-                    tracked_error!("main bootstrap task failed: {}", err);
+                    tracked_error!("main bootstrap task failed: {err}");
                     v
                 }
             };
 
-            for result in spawned {
-                match result {
-                    Ok(Ok(mut v)) => next.append(&mut v),
-                    Ok(Err((mut v, err))) => {
-                        next.append(&mut v);
-                        tracked_error!("bootstrap task failed: {}", err);
-                    }
-                    Err(err) => tracked_error!("bootstrap task failed: {}", err),
-                }
-            }
+            collect_batch_vecs(&mut next, spawned, "bootstrap")?;
             Ok(next)
         }
     }
@@ -901,21 +948,12 @@ where
             let mut edges = match local_result {
                 Ok(v) => v,
                 Err((v, err)) => {
-                    tracked_error!("search_prune_and_search main failed: {}", err);
+                    tracked_error!("search_prune_and_search main failed: {err}");
                     v
                 }
             };
 
-            for result in spawned {
-                match result {
-                    Ok(Ok(mut v)) => edges.append(&mut v),
-                    Ok(Err((mut v, err))) => {
-                        edges.append(&mut v);
-                        tracked_error!("search_prune_and_search failed: {}", err);
-                    }
-                    Err(err) => tracked_error!("search_prune_and_search failed: {}", err),
-                }
-            }
+            collect_batch_vecs(&mut edges, spawned, "search_prune_and_search")?;
 
             let mut backedges = aggregate_backedges(&edges);
 
@@ -1017,14 +1055,7 @@ where
                 .collect();
 
             let results = join_all(handles).await;
-            for result in results {
-                match result {
-                    Err(err) | Ok(Err(err)) => {
-                        tracked_error!("Error in `add_edge_and_prune`: {}", err);
-                    }
-                    Ok(Ok(())) => {}
-                }
-            }
+            collect_unit_results(results, "add_edge_and_prune")?;
 
             // Indicate the batch as complete.
             for guard in guards {
@@ -1404,6 +1435,7 @@ where
                 );
                 let mut edge_hashmaps = Vec::with_capacity(chunk.len());
 
+                let mut dispatch_err = None;
                 for output in edge_collection {
                     match output {
                         Ok(Ok(edges)) => {
@@ -1412,13 +1444,25 @@ where
                             }
                             edge_hashmaps.push(edges);
                         }
-                        Ok(Err(err)) | Err(err) => {
+                        Ok(Err(err)) => {
                             tracked_error!(
-                                "inplace_delete task failed in multi_inplace_delete: {}",
+                                "inplace_delete returned error in multi_inplace_delete: {}",
                                 err
                             );
                         }
+                        Err(err) => {
+                            tracked_error!(
+                                "inplace_delete task dispatch failed in multi_inplace_delete: {}",
+                                err
+                            );
+                            if dispatch_err.is_none() {
+                                dispatch_err = Some(err);
+                            }
+                        }
                     }
+                }
+                if let Some(err) = dispatch_err {
+                    return Err(err);
                 }
 
                 // next, insert and prune, adding the option to remove all the deleted neighbors
@@ -1488,14 +1532,7 @@ where
 
                 // Wait for all tasks to complete.
                 let results = join_all(tasks).await;
-                for result in results {
-                    match result {
-                        Err(e) | Ok(Err(e)) => {
-                            tracked_error!("Error in add_edge_and_prune: {}", e);
-                        }
-                        Ok(Ok(())) => {}
-                    }
-                }
+                collect_unit_results(results, "add_edge_and_prune")?;
 
                 // finally, drop each deleted neighbor's edges, this can run sequentially
                 let prune_strategy = strategy.prune_strategy();
