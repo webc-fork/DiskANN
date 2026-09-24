@@ -399,9 +399,9 @@ impl<I: NeighborPriorityQueueIdType> NeighborPriorityQueue<I> {
 
     #[cfg(debug_assertions)]
     fn dbgassert_unique_insert(&self, id: I) {
-        for i in 0..self.size {
+        for &(visited_id, _) in &self.id_visiteds[..self.size] {
             debug_assert!(
-                self.id_visiteds[i].0 != id,
+                visited_id != id,
                 "Neighbor with ID {} already exists in the priority queue",
                 id
             );

@@ -6,10 +6,10 @@
 use std::num::NonZeroUsize;
 
 use super::{StorageReadProvider, StorageWriteProvider};
+use diskann_utils::{future::AsyncFriendly, lazy_format};
 use webc_diskann::{
     ANNError, ANNResult, graph::DiskANNIndex, provider::DataProvider, utils::VectorRepr,
 };
-use diskann_utils::{future::AsyncFriendly, lazy_format};
 
 use super::{AsyncIndexMetadata, AsyncQuantLoadContext, DiskGraphOnly, LoadWith, SaveWith};
 use crate::model::{
@@ -218,14 +218,14 @@ mod tests {
     use std::{num::NonZeroUsize, sync::Arc};
 
     use crate::storage::VirtualStorageProvider;
+    use crate::test_utils::test_data_root;
+    use diskann_utils::views::MatrixView;
+    use diskann_vector::distance::Metric;
     use webc_diskann::{
         graph::{AdjacencyList, config, glue::InsertStrategy},
         provider::SetElement,
         utils::{IntoUsize, ONE},
     };
-    use crate::test_utils::test_data_root;
-    use diskann_utils::views::MatrixView;
-    use diskann_vector::distance::Metric;
 
     use super::*;
     use crate::{

@@ -64,9 +64,9 @@ pub mod pq {
     //! vector or a PQ-compressed code. The [`Hybrid`] enum captures this duality, and the
     //! remaining types adapt it to the [`workingset`](webc_diskann::graph::workingset) framework.
 
-    use webc_diskann::utils::VectorRepr;
     use diskann_utils::Reborrow;
     use diskann_vector::DistanceFunction;
+    use webc_diskann::utils::VectorRepr;
 
     use crate::model::pq;
 

@@ -10,11 +10,11 @@ use std::io::{BufReader, Read, Seek, Write};
 
 use bytemuck::Pod;
 use byteorder::{LittleEndian, ReadBytesExt};
-use webc_diskann::ANNResult;
 use diskann_utils::{
     io::{Metadata, ReadBinError, SaveBinError, read_bin, write_bin},
     views::{Matrix, MatrixView},
 };
+use webc_diskann::ANNResult;
 
 /// Load a list of vector ids from the stream.
 pub fn load_vector_ids<Reader: Read>(reader: &mut Reader) -> std::io::Result<(usize, Vec<u32>)> {
@@ -237,8 +237,10 @@ mod storage_util_test {
 
         file.read_to_end(&mut buffer).unwrap();
         let data_read: Vec<u64> = buffer
-            .chunks_exact(8)
-            .map(|b| u64::from_le_bytes([b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7]]))
+            .as_chunks::<8>()
+            .0
+            .iter()
+            .map(|b| u64::from_le_bytes(*b))
             .collect();
 
         assert_eq!(num_pts, metadata.npoints());

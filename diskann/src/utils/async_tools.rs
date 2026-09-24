@@ -349,7 +349,7 @@ impl ExactSizeIterator for PartitionIter {}
 ///
 /// This function assumes that task < ntasks.get().
 fn partition_impl(nitems: usize, ntasks: NonZeroUsize, task: usize) -> std::ops::Range<usize> {
-    let k = nitems / ntasks.get();
+    let k = nitems / ntasks;
     let m = nitems - k * ntasks.get();
 
     if task >= m {

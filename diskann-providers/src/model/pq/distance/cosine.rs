@@ -3,8 +3,8 @@
  * Licensed under the MIT license.
  */
 
-use webc_diskann::ANNResult;
 use diskann_vector::PreprocessedDistanceFunction;
+use webc_diskann::ANNResult;
 
 use crate::model::pq::{distance::Shared, fixed_chunk_pq_table::FixedChunkPQTable};
 

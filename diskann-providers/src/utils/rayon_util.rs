@@ -2,8 +2,8 @@
  * Copyright (c) Microsoft Corporation.
  * Licensed under the MIT license.
  */
-use webc_diskann::{ANNError, ANNResult};
 use rayon::prelude::ParallelIterator;
+use webc_diskann::{ANNError, ANNResult};
 
 /// Creates a new thread pool with the specified number of threads.
 /// If `num_threads` is 0, it defaults to the number of logical CPUs.

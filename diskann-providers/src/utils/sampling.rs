@@ -9,12 +9,12 @@ use std::{
 
 use crate::storage::StorageReadProvider;
 use byteorder::{ByteOrder, LittleEndian, ReadBytesExt};
-use webc_diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 use diskann_utils::lazy_format;
 use rand::{
     Rng,
     distr::{Distribution, StandardUniform},
 };
+use webc_diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 
 use super::READ_WRITE_BLOCK_SIZE;
 

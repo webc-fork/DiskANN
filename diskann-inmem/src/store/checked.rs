@@ -77,8 +77,8 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use webc_diskann::utils::IntoUsize;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use webc_diskann::utils::IntoUsize;
 
 use crate::{epoch, num::IdLimit, store::Store};
 

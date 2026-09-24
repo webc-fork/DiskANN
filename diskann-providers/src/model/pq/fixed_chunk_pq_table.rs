@@ -3,7 +3,6 @@
  * Licensed under the MIT license.
  */
 
-use webc_diskann::{ANNError, ANNResult, utils::IntoUsize};
 use diskann_quantization::{
     CompressInto,
     product::{self, BasicTable},
@@ -15,6 +14,7 @@ use diskann_utils::{
 };
 use diskann_vector::{PureDistanceFunction, distance};
 use diskann_wide::ARCH;
+use webc_diskann::{ANNError, ANNResult, utils::IntoUsize};
 
 use super::NUM_PQ_CENTROIDS;
 use crate::utils::{Bridge, BridgeErr};
@@ -692,8 +692,8 @@ mod fixed_chunk_pq_table_test {
     use core::ops::Range;
 
     use crate::storage::{PQStorage, VirtualStorageProvider};
-    use approx::assert_relative_eq;
     use crate::test_utils::test_data_root;
+    use approx::assert_relative_eq;
     use diskann_vector::{
         PureDistanceFunction,
         distance::{InnerProduct, SquaredL2},

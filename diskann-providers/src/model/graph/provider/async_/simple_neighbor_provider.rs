@@ -6,10 +6,10 @@
 use std::sync::RwLock;
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
-use webc_diskann::{ANNError, ANNResult, graph::AdjacencyList, provider::HasId};
 use diskann_utils::lazy_format;
 use diskann_vector::contains::ContainsSimd;
 use tracing::trace;
+use webc_diskann::{ANNError, ANNResult, graph::AdjacencyList, provider::HasId};
 
 use super::common::{AlignedMemoryVectorStore, TestCallCount};
 use crate::storage::{

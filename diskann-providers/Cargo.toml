@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 [package]
 name = "webc-diskann-providers"
-version = "0.59.0-webc.6"
+version.workspace = true
 authors.workspace = true
 description.workspace = true
 repository.workspace = true

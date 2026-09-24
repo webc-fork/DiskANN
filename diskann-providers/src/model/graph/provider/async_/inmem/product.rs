@@ -5,6 +5,8 @@
 
 use std::future::Future;
 
+use diskann_utils::future::AsyncFriendly;
+use diskann_vector::{PreprocessedDistanceFunction, distance::Metric};
 use webc_diskann::default_post_processor;
 use webc_diskann::{
     ANNError, ANNResult,
@@ -20,8 +22,6 @@ use webc_diskann::{
     provider::{ExecutionContext, HasId},
     utils::{IntoUsize, VectorRepr},
 };
-use diskann_utils::future::AsyncFriendly;
-use diskann_vector::{PreprocessedDistanceFunction, distance::Metric};
 
 use crate::model::{
     graph::provider::async_::{
@@ -677,8 +677,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use webc_diskann::utils::VectorRepr;
     use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
+    use webc_diskann::utils::VectorRepr;
 
     use crate::model::{
         graph::provider::async_::{

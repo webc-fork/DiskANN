@@ -6,6 +6,8 @@
 use std::{fmt::Debug, future::Future, num::NonZeroUsize};
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
+use diskann_utils::{future::AsyncFriendly, lazy_format};
+use diskann_vector::distance::Metric;
 use webc_diskann::{
     ANNError, ANNResult,
     graph::AdjacencyList,
@@ -15,8 +17,6 @@ use webc_diskann::{
     },
     utils::{IntoUsize, ONE, VectorRepr},
 };
-use diskann_utils::{future::AsyncFriendly, lazy_format};
-use diskann_vector::distance::Metric;
 
 use crate::{
     model::graph::provider::async_::{

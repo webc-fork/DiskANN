@@ -5,12 +5,12 @@
 
 use std::sync::Arc;
 
+use diskann_utils::future::AsyncFriendly;
 use webc_diskann::{
     ANNResult,
     graph::{Config, DiskANNIndex},
     utils::VectorRepr,
 };
-use diskann_utils::future::AsyncFriendly;
 
 use crate::model::{
     self,
@@ -158,7 +158,16 @@ pub(crate) mod tests {
     };
 
     use crate::storage::VirtualStorageProvider;
+    use crate::test_utils::test_data_root;
     use approx::assert_abs_diff_eq;
+    use diskann_quantization::scalar::train::ScalarQuantizationParameters;
+    use diskann_utils::views::Matrix;
+    use diskann_vector::{
+        DistanceFunction, PureDistanceFunction,
+        distance::{Metric, SquaredL2},
+    };
+    use rand::{distr::Distribution, rngs::StdRng, seq::SliceRandom};
+    use rstest::rstest;
     use webc_diskann::graph::test::synthetic::Grid;
     use webc_diskann::{
         graph::{
@@ -179,15 +188,6 @@ pub(crate) mod tests {
         },
         utils::{IntoUsize, ONE},
     };
-    use diskann_quantization::scalar::train::ScalarQuantizationParameters;
-    use crate::test_utils::test_data_root;
-    use diskann_utils::views::Matrix;
-    use diskann_vector::{
-        DistanceFunction, PureDistanceFunction,
-        distance::{Metric, SquaredL2},
-    };
-    use rand::{distr::Distribution, rngs::StdRng, seq::SliceRandom};
-    use rstest::rstest;
 
     use super::*;
     use crate::{
@@ -2880,9 +2880,9 @@ pub(crate) mod tests {
     #[cfg(feature = "experimental_diversity_search")]
     #[tokio::test]
     async fn test_inmemory_search_diversity_search() {
-        use webc_diskann::neighbor::AttributeValueProvider;
         use rand::Rng;
         use std::collections::HashMap;
+        use webc_diskann::neighbor::AttributeValueProvider;
 
         // Simple test attribute provider
         #[derive(Debug, Clone)]

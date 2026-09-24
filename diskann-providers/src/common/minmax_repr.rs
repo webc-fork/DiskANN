@@ -20,7 +20,6 @@
 //! for zero-copy conversions from byte arrays. Each quantized vector
 //! is stored as a contiguous array of [`MinMaxElement`] values.
 //!
-use webc_diskann::{ANNError, utils::VectorRepr};
 use diskann_quantization::{
     bits::{BitSlice, Representation, Unsigned},
     distances::InnerProduct,
@@ -33,6 +32,7 @@ use diskann_quantization::{
 use diskann_utils::lazy_format;
 use diskann_vector::{PureDistanceFunction, distance::Metric};
 use thiserror::Error;
+use webc_diskann::{ANNError, utils::VectorRepr};
 
 //////////////
 /// Errors ///

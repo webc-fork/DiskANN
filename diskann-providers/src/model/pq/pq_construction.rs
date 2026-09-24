@@ -13,11 +13,6 @@ use std::{
 };
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
-use webc_diskann::{
-    ANNError, ANNResult,
-    error::IntoANNResult,
-    utils::{VectorRepr, read_exact_into},
-};
 use diskann_quantization::{
     CompressInto,
     product::{BasicTableView, TransposedTable, train::TrainQuantizer},
@@ -30,6 +25,11 @@ use diskann_utils::{
 use rand::{Rng, distr::Distribution};
 use rayon::prelude::*;
 use tracing::info;
+use webc_diskann::{
+    ANNError, ANNResult,
+    error::IntoANNResult,
+    utils::{VectorRepr, read_exact_into},
+};
 
 use crate::{
     model::GeneratePivotArguments,
@@ -490,18 +490,15 @@ pub fn generate_pq_data_from_pivots_from_membuf_batch<T: VectorRepr + Sync>(
 
 #[cfg(test)]
 mod pq_test {
-    use std::{
-        f32,
-        io::{Read, Write},
-    };
+    use std::io::{Read, Write};
 
     use crate::storage::VirtualStorageProvider;
-    use approx::assert_relative_eq;
-    use webc_diskann::utils::IntoUsize;
     use crate::test_utils::test_data_root;
+    use approx::assert_relative_eq;
     use rand_distr::{Distribution, Uniform};
     use rstest::rstest;
     use vfs::OverlayFS;
+    use webc_diskann::utils::IntoUsize;
 
     use super::*;
     use crate::{

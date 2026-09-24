@@ -8,8 +8,8 @@
 
 use std::num::NonZeroUsize;
 
-use webc_diskann::graph::Config;
 use diskann_vector::distance::Metric;
+use webc_diskann::graph::Config;
 
 use crate::model::graph::provider::async_::PrefetchCacheLineLevel;
 
@@ -109,8 +109,8 @@ impl IndexConfiguration {
 
 #[cfg(test)]
 mod tests {
-    use webc_diskann::utils::ONE;
     use diskann_vector::distance::Metric;
+    use webc_diskann::utils::ONE;
 
     use super::*;
 

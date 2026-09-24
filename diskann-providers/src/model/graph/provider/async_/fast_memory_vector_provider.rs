@@ -14,8 +14,8 @@
 use std::sync::Mutex;
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
-use webc_diskann::{ANNError, ANNResult, utils::VectorRepr};
 use diskann_vector::distance::Metric;
+use webc_diskann::{ANNError, ANNResult, utils::VectorRepr};
 
 use super::common::{AlignedMemoryVectorStore, PrefetchCacheLineLevel, TestCallCount};
 use crate::{

@@ -44,7 +44,7 @@ uninlined_format_args = "allow"
 [dev-dependencies]
 webc-diskann = { workspace = true, features = ["testing"] }
 rand = { workspace = true }
-tokio = { workspace = true, features = ["macros"] }
+tokio = { workspace = true, features = ["macros", "rt"] }
 tempfile = { workspace = true }
 
 [[bin]]

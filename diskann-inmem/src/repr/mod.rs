@@ -9,8 +9,8 @@
 
 use std::num::NonZeroU16;
 
-use webc_diskann::ANNResult;
 use thiserror::Error;
+use webc_diskann::ANNResult;
 
 use crate::{
     counters::LocalCounters,

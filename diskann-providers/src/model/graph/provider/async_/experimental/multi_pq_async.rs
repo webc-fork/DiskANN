@@ -6,11 +6,11 @@
 use std::sync::{Arc, Mutex};
 
 use arc_swap::{ArcSwap, Guard};
-use webc_diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 use diskann_quantization::CompressInto;
 use diskann_utils::lazy_format;
 use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
 use rand::{Rng, SeedableRng, rngs::StdRng};
+use webc_diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 
 use crate::{
     model::{
@@ -180,7 +180,7 @@ pub struct NoneToInfinity<T>(T);
 
 impl<B, T> DistanceFunction<&[f32], &Guard<Arc<B>>, f32> for NoneToInfinity<T>
 where
-    T: for<'a, 'b> DistanceFunction<&'a [f32], &'a B, Option<f32>>,
+    T: for<'a> DistanceFunction<&'a [f32], &'a B, Option<f32>>,
 {
     #[inline(always)]
     fn evaluate_similarity(&self, x: &[f32], y: &Guard<Arc<B>>) -> f32 {

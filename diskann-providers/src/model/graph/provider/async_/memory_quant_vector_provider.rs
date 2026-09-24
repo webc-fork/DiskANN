@@ -12,12 +12,12 @@ use std::sync::Arc;
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
 use arc_swap::{ArcSwap, Guard};
-use webc_diskann::utils::VectorRepr;
-use webc_diskann::{ANNError, ANNResult, error::IntoANNResult};
 #[cfg(test)]
 use diskann_quantization::CompressInto;
 use diskann_utils::object_pool::ObjectPool;
 use diskann_vector::distance::Metric;
+use webc_diskann::utils::VectorRepr;
+use webc_diskann::{ANNError, ANNResult, error::IntoANNResult};
 
 use super::{VectorGuard, common::TestCallCount};
 #[cfg(test)]

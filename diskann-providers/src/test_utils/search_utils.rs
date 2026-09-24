@@ -3,8 +3,8 @@
  * Licensed under the MIT license.
  */
 
-use webc_diskann::neighbor::{self, Neighbor};
 use diskann_utils::views::MatrixView;
+use webc_diskann::neighbor::{self, Neighbor};
 
 /// Compute the ground truth for a small dataset.
 ///

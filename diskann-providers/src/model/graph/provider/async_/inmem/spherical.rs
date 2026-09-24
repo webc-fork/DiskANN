@@ -7,6 +7,14 @@
 
 use std::{future::Future, sync::Mutex};
 
+use diskann_quantization::{
+    alloc::{GlobalAllocator, ScopedAllocator},
+    meta::NotCanonical,
+    spherical,
+};
+use diskann_utils::future::AsyncFriendly;
+use diskann_vector::{PreprocessedDistanceFunction, distance::Metric};
+use thiserror::Error;
 use webc_diskann::{
     ANNError, ANNResult, convert_error, default_post_processor,
     error::IntoANNResult,
@@ -21,14 +29,6 @@ use webc_diskann::{
     provider::{ExecutionContext, HasId},
     utils::{IntoUsize, VectorRepr},
 };
-use diskann_quantization::{
-    alloc::{GlobalAllocator, ScopedAllocator},
-    meta::NotCanonical,
-    spherical,
-};
-use diskann_utils::future::AsyncFriendly;
-use diskann_vector::{PreprocessedDistanceFunction, distance::Metric};
-use thiserror::Error;
 
 use super::{GetFullPrecision, Rerank};
 use crate::{

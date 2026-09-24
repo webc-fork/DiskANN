@@ -6,6 +6,19 @@
 use std::{future::Future, sync::Mutex};
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
+use diskann_quantization::{
+    AsFunctor, CompressInto,
+    bits::{Representation, Unsigned},
+    meta::NotCanonical,
+    scalar::{
+        CompensatedCosineNormalized, CompensatedIP, CompensatedSquaredL2, CompensatedVector,
+        CompensatedVectorRef, InputContainsNaN, MeanNormMissing, MutCompensatedVectorRef,
+        ScalarQuantizer,
+    },
+};
+use diskann_utils::{Reborrow, ReborrowMut, future::AsyncFriendly};
+use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
+use thiserror::Error;
 use webc_diskann::{
     ANNError, ANNResult, default_post_processor,
     error::IntoANNResult,
@@ -20,19 +33,6 @@ use webc_diskann::{
     provider::{ExecutionContext, HasId},
     utils::{IntoUsize, VectorRepr},
 };
-use diskann_quantization::{
-    AsFunctor, CompressInto,
-    bits::{Representation, Unsigned},
-    meta::NotCanonical,
-    scalar::{
-        CompensatedCosineNormalized, CompensatedIP, CompensatedSquaredL2, CompensatedVector,
-        CompensatedVectorRef, InputContainsNaN, MeanNormMissing, MutCompensatedVectorRef,
-        ScalarQuantizer,
-    },
-};
-use diskann_utils::{Reborrow, ReborrowMut, future::AsyncFriendly};
-use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
-use thiserror::Error;
 
 use super::{DefaultProvider, GetFullPrecision, Rerank};
 use crate::{
@@ -898,11 +898,11 @@ webc_diskann::convert_error!(SQError);
 #[cfg(test)]
 mod tests {
     use crate::storage::VirtualStorageProvider;
-    use webc_diskann::utils::ONE;
     use diskann_quantization::scalar::train::ScalarQuantizationParameters;
     use diskann_utils::views::MatrixView;
     use diskann_vector::distance::Metric;
     use rstest::rstest;
+    use webc_diskann::utils::ONE;
 
     use super::*;
 

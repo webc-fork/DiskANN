@@ -772,13 +772,13 @@ where
 mod tests {
     use super::*;
 
+    use diskann_utils::views::Matrix;
+    use diskann_vector::distance::Metric;
     use webc_diskann::{
         graph::{DiskANNIndex, InplaceDeleteMethod, search::Knn, test::synthetic::Grid},
         neighbor::Neighbor,
         provider::{DataProvider, Delete},
     };
-    use diskann_utils::views::Matrix;
-    use diskann_vector::distance::Metric;
 
     use crate::num::Capacity;
 
