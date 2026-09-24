@@ -14,10 +14,10 @@
 use std::sync::{Arc, Mutex};
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
+use webc_diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 use diskann_quantization::CompressInto;
 use diskann_utils::object_pool::ObjectPool;
 use diskann_vector::distance::Metric;
-use webc_diskann::{ANNError, ANNResult, error::IntoANNResult, utils::VectorRepr};
 
 use super::common::{AlignedMemoryVectorStore, TestCallCount};
 use crate::{
@@ -381,12 +381,11 @@ impl storage::bin::GetData for FastMemoryQuantVectorProviderAsync {
 #[cfg(test)]
 mod tests {
     use crate::storage::VirtualStorageProvider;
-    use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
     use webc_diskann::utils::ONE;
+    use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
 
     use super::*;
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn common_errors() {
         let dim = 5;
@@ -559,7 +558,6 @@ mod tests {
     }
 
     // Test Saving and Loading.
-    #[cfg(feature = "tokio")]
     #[tokio::test(flavor = "current_thread")]
     async fn test_async_save_load() {
         type Provider = FastMemoryQuantVectorProviderAsync;

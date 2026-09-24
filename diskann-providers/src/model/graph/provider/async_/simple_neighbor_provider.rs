@@ -6,10 +6,10 @@
 use std::sync::RwLock;
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
+use webc_diskann::{ANNError, ANNResult, graph::AdjacencyList, provider::HasId};
 use diskann_utils::lazy_format;
 use diskann_vector::contains::ContainsSimd;
 use tracing::trace;
-use webc_diskann::{ANNError, ANNResult, graph::AdjacencyList, provider::HasId};
 
 use super::common::{AlignedMemoryVectorStore, TestCallCount};
 use crate::storage::{
@@ -417,7 +417,6 @@ mod tests {
         assert_eq!(adaptor.get_adjacency_list(1).unwrap(), vec![3]);
     }
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_save_load() {
         let max_degree = 5;

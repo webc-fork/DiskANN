@@ -1463,9 +1463,7 @@ impl glue::InplaceDeleteStrategy<Provider> for Strategy {
 mod tests {
     use super::*;
 
-    use crate::test::assert_message_contains;
-    #[cfg(feature = "tokio")]
-    use crate::test::tokio::current_thread_runtime;
+    use crate::test::{assert_message_contains, tokio::current_thread_runtime};
 
     #[test]
     fn test_start_point() {
@@ -1580,7 +1578,6 @@ mod tests {
         assert_eq!(t.data.as_ptr(), ptr);
     }
 
-    #[cfg(feature = "tokio")]
     #[test]
     fn test_context() {
         use provider::ExecutionContext;
@@ -1738,21 +1735,14 @@ mod tests {
 
     #[test]
     fn id_conversion() {
+        use std::future::Future;
+
         use provider::DataProvider;
 
-        // Backend-agnostic blocking: this mapping test runs under both the
-        // tokio and compio builds.
-        fn block_on<F: std::future::Future>(future: F) -> F::Output {
-            #[cfg(feature = "tokio")]
-            {
-                crate::test::tokio::current_thread_runtime().block_on(future)
-            }
-            #[cfg(all(feature = "compio", not(feature = "tokio")))]
-            {
-                compio::runtime::Runtime::new()
-                    .expect("compio runtime initialization should succeed for tests")
-                    .block_on(future)
-            }
+        // The id translation is async, so drive it from this synchronous test
+        // with a current-thread runtime.
+        fn block_on<F: Future>(future: F) -> F::Output {
+            crate::test::tokio::current_thread_runtime().block_on(future)
         }
 
         let provider = create_test_provider();
@@ -1783,7 +1773,6 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "tokio")]
     #[test]
     fn test_set_element() {
         use provider::{Guard, SetElement};
@@ -1832,7 +1821,6 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "tokio")]
     #[test]
     fn test_neighbor_accessor() {
         use provider::{DefaultAccessor, NeighborAccessor};
@@ -1862,7 +1850,6 @@ mod tests {
         assert_message_contains!(err.to_string(), "Attempt to access an invalid id");
     }
 
-    #[cfg(feature = "tokio")]
     #[test]
     fn test_set_neighbors() {
         use provider::{DefaultAccessor, NeighborAccessor, NeighborAccessorMut};
@@ -1941,7 +1928,6 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "tokio")]
     #[test]
     fn test_append_vector() {
         use provider::{DefaultAccessor, NeighborAccessor, NeighborAccessorMut};
@@ -2027,7 +2013,6 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "tokio")]
     #[test]
     fn test_delete() {
         use provider::Delete;
@@ -2119,7 +2104,6 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "tokio")]
     #[test]
     fn test_start_points_cannot_be_deleted() {
         use provider::Delete;

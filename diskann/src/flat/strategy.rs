@@ -33,8 +33,7 @@ pub trait DistancesUnordered: HasId + Send + Sync {
         F: Send + FnMut(Self::Id, f32);
 }
 
-// Every test in this module drives an async scanner through the tokio runtime.
-#[cfg(all(test, feature = "tokio"))]
+#[cfg(test)]
 mod tests {
     //! Direct [`DistancesUnordered`] impls over in-memory fixtures, including a
     //! happy-path scanner and one that fails mid-stream.

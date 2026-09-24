@@ -14,8 +14,8 @@
 use std::sync::Mutex;
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
-use diskann_vector::distance::Metric;
 use webc_diskann::{ANNError, ANNResult, utils::VectorRepr};
+use diskann_vector::distance::Metric;
 
 use super::common::{AlignedMemoryVectorStore, PrefetchCacheLineLevel, TestCallCount};
 use crate::{
@@ -348,7 +348,6 @@ mod tests {
 
     use super::*;
 
-    #[cfg(feature = "tokio")]
     #[tokio::test(flavor = "multi_thread", worker_threads = 5)]
     async fn test_vector_provider() {
         let num_points = 100;
@@ -468,7 +467,6 @@ mod tests {
         check_providers_equal(&provider, &reloaded);
     }
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_async_save() {
         type Provider = FastMemoryVectorProviderAsync<f32>;

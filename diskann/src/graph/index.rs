@@ -17,11 +17,12 @@ use diskann_utils::{
     future::{AssertSend, SendFuture, boxit},
 };
 use diskann_vector::DistanceFunction;
-use futures_util::FutureExt;
+use futures_util::{
+    FutureExt,
+    future::{join, join_all},
+};
 use hashbrown::HashSet;
 use thiserror::Error;
-
-use crate::runtime::{JoinError as RuntimeJoinError, JoinSet};
 
 use super::{
     AdjacencyList, Config, ConsolidateKind, InplaceDeleteMethod, Search,
@@ -515,18 +516,20 @@ where
                             .await
                     };
 
-                    crate::runtime::spawn(context.wrap_spawn(future))
+                    context.spawn_task(future)
                 })
                 .collect();
+
+            // Drive every task to completion before inspecting any result: `join_all` polls
+            // them concurrently and collects in creation order, which is the order the
+            // guards below must keep to stay aligned with `ids`.
+            let processed = join_all(handles).await;
 
             // The collection of all the insert guards for the batch.
             let mut guards = Vec::with_capacity(batch.len());
 
-            for h in handles {
-                let processed = h.await.map_err(ANNError::new)??;
-                for guard in processed {
-                    guards.push(guard);
-                }
+            for chunk in processed {
+                guards.extend(chunk??);
             }
 
             Ok(guards)
@@ -706,19 +709,22 @@ where
                     let strategy = f();
                     let context_clone = context.clone();
                     let work_clone = work.clone();
-                    crate::runtime::spawn(context.wrap_spawn(async move {
+                    context.spawn_task(async move {
                         self_clone
                             .multi_insert_bootstrap_task(&strategy, &context_clone, &work_clone)
                             .await
-                    }))
+                    })
                 })
                 .collect();
 
-            // Process work on this thread.
-            let mut next = match self
-                .multi_insert_bootstrap_task(&f(), &context, &work)
-                .await
-            {
+            // Process work on this thread concurrently with the tasks above. Both claim items
+            // from the same [`DynamicBalancer`], so the local task must not run to completion
+            // before the handles are polled; otherwise the spawned tasks find nothing left.
+            let local_strategy = f();
+            let local = self.multi_insert_bootstrap_task(&local_strategy, &context, &work);
+            let (local_result, spawned) = join(local, join_all(handles)).await;
+
+            let mut next = match local_result {
                 Ok(v) => v,
                 Err((v, err)) => {
                     tracked_error!("main bootstrap task failed: {}", err);
@@ -726,16 +732,14 @@ where
                 }
             };
 
-            for h in handles {
-                match h.await {
-                    Ok(maybe_ok) => match maybe_ok {
-                        Ok(mut v) => next.append(&mut v),
-                        Err((mut v, err)) => {
-                            next.append(&mut v);
-                            tracked_error!("bootstrap task failed: {}", err);
-                        }
-                    },
-                    Err(err) => tracked_error!("boostrap spawn failed: {}", err),
+            for result in spawned {
+                match result {
+                    Ok(Ok(mut v)) => next.append(&mut v),
+                    Ok(Err((mut v, err))) => {
+                        next.append(&mut v);
+                        tracked_error!("bootstrap task failed: {}", err);
+                    }
+                    Err(err) => tracked_error!("bootstrap task failed: {}", err),
                 }
             }
             Ok(next)
@@ -883,15 +887,18 @@ where
                             )
                             .await
                     };
-                    crate::runtime::spawn(context.wrap_spawn(future))
+                    context.spawn_task(future)
                 })
                 .collect();
 
-            // Defer dealing with the `result` until after we have joined the other tasks.
-            let mut edges = match self
-                .search_and_prune_batch(&*strategy, context, &*vectors, &work, &seed)
-                .await
-            {
+            // Do the remaining work on this thread *concurrently* with the tasks above. Both
+            // claim items from the same [`DynamicBalancer`], so running the local invocation
+            // to completion before polling the handles would leave the spawned tasks with
+            // nothing to do.
+            let local = self.search_and_prune_batch(&*strategy, context, &*vectors, &work, &seed);
+            let (local_result, spawned) = join(local, join_all(handles)).await;
+
+            let mut edges = match local_result {
                 Ok(v) => v,
                 Err((v, err)) => {
                     tracked_error!("search_prune_and_search main failed: {}", err);
@@ -899,15 +906,14 @@ where
                 }
             };
 
-            // At this point - all the other tasks should be close to completing.
-            for h in handles {
-                match h.await {
+            for result in spawned {
+                match result {
                     Ok(Ok(mut v)) => edges.append(&mut v),
                     Ok(Err((mut v, err))) => {
                         edges.append(&mut v);
-                        tracked_error!("search_prune_and_search failed: {}", err)
+                        tracked_error!("search_prune_and_search failed: {}", err);
                     }
-                    Err(err) => tracked_error!("Tokio spawned task join error: {}", err),
+                    Err(err) => tracked_error!("search_prune_and_search failed: {}", err),
                 }
             }
 
@@ -973,7 +979,7 @@ where
                     let backedges_clone = backedges.clone();
                     let seed_clone = seed.clone();
 
-                    crate::runtime::spawn(context.wrap_spawn(async move {
+                    context.spawn_task(async move {
                         let mut accessor = strategy_clone.seeded_prune_accessor(
                             self_clone.provider(),
                             &context_clone,
@@ -1006,18 +1012,15 @@ where
                                 .await?;
                         }
                         ANNResult::<()>::Ok(())
-                    }))
+                    })
                 })
                 .collect();
 
-            for handle in handles {
-                let result = handle.await;
+            let results = join_all(handles).await;
+            for result in results {
                 match result {
-                    Err(err) => {
-                        tracked_error!("Tokio task error in multi_insert: {}", err);
-                    }
-                    Ok(Err(err)) => {
-                        tracked_error!("Error in `add_edge_and_prune: {}", err);
+                    Err(err) | Ok(Err(err)) => {
+                        tracked_error!("Error in `add_edge_and_prune`: {}", err);
                     }
                     Ok(Ok(())) => {}
                 }
@@ -1389,21 +1392,11 @@ where
                                 )
                                 .await
                         };
-                        crate::runtime::spawn(context.wrap_spawn(future))
+                        context.spawn_task(future)
                     })
                     .collect();
 
-                let mut edge_collection = Vec::with_capacity(handles.len());
-                for h in handles {
-                    let res = h.await.map_err(|err| {
-                        #[derive(Debug, Error)]
-                        #[error("Spawning a task failed in inplace-delete: {0}")]
-                        struct LocalError(RuntimeJoinError);
-
-                        ANNError::new(LocalError(err))
-                    });
-                    edge_collection.push(res);
-                }
+                let edge_collection = join_all(handles).await;
 
                 // check for errors and collect ids to modify in one hashset
                 let mut ids_to_modify = HashSet::<DP::InternalId>::with_capacity(
@@ -1419,15 +1412,9 @@ where
                             }
                             edge_hashmaps.push(edges);
                         }
-                        Ok(Err(ann_error)) => {
+                        Ok(Err(err)) | Err(err) => {
                             tracked_error!(
-                                "inplace_delete returned error in multi_inplace_delete: {}",
-                                ann_error
-                            );
-                        }
-                        Err(err) => {
-                            tracked_error!(
-                                "Tokio spawned task has a join error in multi_inplace_delete: {}",
+                                "inplace_delete task failed in multi_inplace_delete: {}",
                                 err
                             );
                         }
@@ -1445,65 +1432,68 @@ where
                 let ids_to_delete = Arc::new(ids_to_delete);
                 let edge_hashmaps = Arc::new(edge_hashmaps);
 
-                let mut tasks = JoinSet::new();
-                for _ in 0..num_tasks.get() {
-                    let self_clone = self.clone();
-                    let context_clone = context.clone();
-                    let strategy_clone = strategy.prune_strategy();
-                    let edges_clone = edges_to_add.clone();
-                    let ids_to_delete_clone = ids_to_delete.clone();
-                    let edge_hashmaps_clone = edge_hashmaps.clone();
-                    tasks.spawn(async move {
-                        loop {
-                            let result = {
-                                let mut guard = edges_clone.lock().map_err(|_| {
-                                    ANNError::message("Poisoned mutex during construction")
-                                })?;
-                                guard.next()
-                            };
+                let tasks: Vec<_> = (0..num_tasks.get())
+                    .map(|_| {
+                        let self_clone = self.clone();
+                        let context_clone = context.clone();
+                        let strategy_clone = strategy.prune_strategy();
+                        let edges_clone = edges_to_add.clone();
+                        let ids_to_delete_clone = ids_to_delete.clone();
+                        let edge_hashmaps_clone = edge_hashmaps.clone();
+                        context.spawn_task(async move {
+                            loop {
+                                let result = {
+                                    let mut guard = edges_clone.lock().map_err(|_| {
+                                        ANNError::message("Poisoned mutex during construction")
+                                    })?;
+                                    guard.next()
+                                };
 
-                            let mut prune_scratch = prune::Scratch::new();
-                            let mut accessor = strategy_clone
-                                .prune_accessor(
-                                    self_clone.provider(),
-                                    &context_clone,
-                                    self_clone.max_occlusion_size(),
-                                )
-                                .into_ann_result()?;
+                                let mut prune_scratch = prune::Scratch::new();
+                                let mut accessor = strategy_clone
+                                    .prune_accessor(
+                                        self_clone.provider(),
+                                        &context_clone,
+                                        self_clone.max_occlusion_size(),
+                                    )
+                                    .into_ann_result()?;
 
-                            match result {
-                                Some(source) => {
-                                    let mut adj_list = Vec::new();
-                                    for edge_hashmap in edge_hashmaps_clone.iter() {
-                                        if let Some(edges) = edge_hashmap.get(&source) {
-                                            // note: we don't deduplicate here because it's faster to let add_edge_and_prune handle it
-                                            adj_list.extend_from_slice(edges);
+                                match result {
+                                    Some(source) => {
+                                        let mut adj_list = Vec::new();
+                                        for edge_hashmap in edge_hashmaps_clone.iter() {
+                                            if let Some(edges) = edge_hashmap.get(&source) {
+                                                // note: we don't deduplicate here because it's faster to let add_edge_and_prune handle it
+                                                adj_list.extend_from_slice(edges);
+                                            }
                                         }
-                                    }
 
-                                    self_clone
-                                        .add_edge_and_prune(
-                                            &mut accessor,
-                                            &adj_list,
-                                            source,
-                                            &mut prune_scratch,
-                                            Some(&ids_to_delete_clone), // delete any edges to a deleted point as part of add_edge_and_prune
-                                        )
-                                        .await?;
+                                        self_clone
+                                            .add_edge_and_prune(
+                                                &mut accessor,
+                                                &adj_list,
+                                                source,
+                                                &mut prune_scratch,
+                                                Some(&ids_to_delete_clone), // delete any edges to a deleted point as part of add_edge_and_prune
+                                            )
+                                            .await?;
+                                    }
+                                    None => break,
                                 }
-                                None => break,
                             }
-                        }
-                        ANNResult::Ok(())
-                    });
-                }
+                            ANNResult::Ok(())
+                        })
+                    })
+                    .collect();
 
                 // Wait for all tasks to complete.
-                while let Some(result) = tasks.join_next().await {
-                    if let Err(_e) = result {
-                        tracked_error!("Tokio task JoinError in multi_inplace_delete");
-                    } else if let Ok(Err(e)) = result {
-                        tracked_error!("Error in add_edge_and_prune: {}", e);
+                let results = join_all(tasks).await;
+                for result in results {
+                    match result {
+                        Err(e) | Ok(Err(e)) => {
+                            tracked_error!("Error in add_edge_and_prune: {}", e);
+                        }
+                        Ok(Ok(())) => {}
                     }
                 }
 

@@ -25,9 +25,9 @@
 
 use std::ptr::NonNull;
 
+use webc_diskann::{graph::AdjacencyList, utils::IntoUsize};
 use parking_lot::{RwLock, RwLockWriteGuard};
 use thiserror::Error;
-use webc_diskann::{graph::AdjacencyList, utils::IntoUsize};
 
 use crate::{
     buffer::{Buffer, BufferError},

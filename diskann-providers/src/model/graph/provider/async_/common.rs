@@ -7,9 +7,9 @@ use std::{cell::UnsafeCell, mem, num::NonZeroUsize, ops::Deref, slice, sync::Arc
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
 use arc_swap::Guard;
+use webc_diskann::{ANNError, ANNResult, always_escalate, utils::IntoUsize};
 use diskann_utils::future::AsyncFriendly;
 use diskann_vector::distance::Metric;
-use webc_diskann::{ANNError, ANNResult, always_escalate, utils::IntoUsize};
 
 use crate::{
     model::graph::provider::async_::{TableDeleteProviderAsync, postprocess},

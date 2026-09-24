@@ -10,11 +10,11 @@ use std::io::{BufReader, Read, Seek, Write};
 
 use bytemuck::Pod;
 use byteorder::{LittleEndian, ReadBytesExt};
+use webc_diskann::ANNResult;
 use diskann_utils::{
     io::{Metadata, ReadBinError, SaveBinError, read_bin, write_bin},
     views::{Matrix, MatrixView},
 };
-use webc_diskann::ANNResult;
 
 /// Load a list of vector ids from the stream.
 pub fn load_vector_ids<Reader: Read>(reader: &mut Reader) -> std::io::Result<(usize, Vec<u32>)> {

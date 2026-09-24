@@ -37,6 +37,7 @@ mod internal_docs {
 
 use std::{fmt::Debug, marker::PhantomData, num::NonZeroUsize};
 
+use webc_diskann::{ANNError, ANNResult, utils::IntoUsize};
 use diskann_utils::views::Matrix;
 use diskann_vector::{
     UnalignedSlice,
@@ -51,7 +52,6 @@ use diskann_wide::{
 };
 use half::f16;
 use thiserror::Error;
-use webc_diskann::{ANNError, ANNResult, utils::IntoUsize};
 
 use crate::{
     counters::LocalCounters,

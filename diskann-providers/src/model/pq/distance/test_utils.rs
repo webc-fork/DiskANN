@@ -5,13 +5,13 @@
 
 // Common utilities for testing PQ-based distance computations.
 use approx::assert_relative_eq;
+use webc_diskann::utils::IntoUsize;
 use diskann_vector::{
     Half, PreprocessedDistanceFunction, PureDistanceFunction,
     distance::{Cosine, InnerProduct, SquaredL2},
 };
 use rand::{Rng, distr::Distribution};
 use rand_distr::{Normal, Uniform};
-use webc_diskann::utils::IntoUsize;
 
 use crate::model::FixedChunkPQTable;
 use diskann_quantization::views::ChunkOffsets;

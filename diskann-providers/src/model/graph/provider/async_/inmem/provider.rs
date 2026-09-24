@@ -6,8 +6,6 @@
 use std::{fmt::Debug, future::Future, num::NonZeroUsize};
 
 use crate::storage::{StorageReadProvider, StorageWriteProvider};
-use diskann_utils::{future::AsyncFriendly, lazy_format};
-use diskann_vector::distance::Metric;
 use webc_diskann::{
     ANNError, ANNResult,
     graph::AdjacencyList,
@@ -17,6 +15,8 @@ use webc_diskann::{
     },
     utils::{IntoUsize, ONE, VectorRepr},
 };
+use diskann_utils::{future::AsyncFriendly, lazy_format};
+use diskann_vector::distance::Metric;
 
 use crate::{
     model::graph::provider::async_::{
@@ -736,7 +736,6 @@ mod tests {
         inmem::CreateFullPrecision,
     };
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_data_provider_and_delete_interface() {
         let ctx = &DefaultContext;

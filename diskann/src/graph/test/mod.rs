@@ -6,6 +6,5 @@
 pub mod provider;
 pub mod synthetic;
 
-// Every case in this module drives the index through the tokio runtime.
-#[cfg(all(test, feature = "tokio"))]
+#[cfg(test)]
 mod cases;

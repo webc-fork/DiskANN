@@ -8,9 +8,7 @@
 //! Use [`KnnOracleRun::run`] to drive `knn_search` under a chosen [`OracleProcessor`]
 //! and pair the result with the oracle's expected post-processed output.
 
-#[cfg(feature = "tokio")]
-use std::convert::Infallible;
-use std::num::NonZeroUsize;
+use std::{convert::Infallible, num::NonZeroUsize};
 
 use diskann_vector::{PreprocessedDistanceFunction, distance::Metric};
 
@@ -21,27 +19,15 @@ use crate::{
         SearchStats, knn_search,
         test::provider::{Provider, Visitor},
     },
-    graph::glue::{CopyIds, SearchPostProcess},
+    graph::{
+        SearchOutputBuffer,
+        glue::{CopyIds, SearchPostProcess},
+    },
     neighbor::{self, BackInserter, Neighbor},
+    provider::HasId,
+    test::tokio::current_thread_runtime,
     utils::VectorRepr,
 };
-#[cfg(feature = "tokio")]
-use crate::{graph::SearchOutputBuffer, provider::HasId};
-
-/// Block on `future` using the selected runtime backend so that these tests
-/// exercise both the `tokio` and `compio` builds.
-fn block_on<F: std::future::Future>(future: F) -> F::Output {
-    #[cfg(feature = "tokio")]
-    {
-        crate::test::tokio::current_thread_runtime().block_on(future)
-    }
-    #[cfg(all(feature = "compio", not(feature = "tokio")))]
-    {
-        compio::runtime::Runtime::new()
-            .expect("compio runtime initialization should succeed for tests")
-            .block_on(future)
-    }
-}
 
 /// Result of running [`knn_search`] under the harness alongside the
 /// oracle's expected post-processed output.
@@ -49,7 +35,6 @@ fn block_on<F: std::future::Future>(future: F) -> F::Output {
 pub(crate) struct KnnOracleRun {
     /// Post-processed `(id, distance)` pairs returned by the search.
     /// Re-sorted from the output buffer so equality checks are deterministic on ties.
-    #[cfg_attr(not(feature = "tokio"), allow(dead_code))]
     pub top_k: Vec<(u32, f32)>,
     /// `top_k.iter().map(|(_, d)| d).collect()`.
     pub top_k_distances: Vec<f32>,
@@ -70,7 +55,7 @@ impl KnnOracleRun {
         query: &[f32],
         k: usize,
     ) -> ANNResult<Self> {
-        block_on(Self::run(provider, oracle, query, k))
+        current_thread_runtime().block_on(Self::run(provider, oracle, query, k))
     }
 
     /// Run [`knn_search`] with an already initialized visitor.
@@ -81,7 +66,7 @@ impl KnnOracleRun {
         query: &[f32],
         k: usize,
     ) -> ANNResult<Self> {
-        block_on(Self::run_with_visitor(
+        current_thread_runtime().block_on(Self::run_with_visitor(
             provider,
             &mut visitor,
             oracle,
@@ -173,10 +158,8 @@ impl OracleProcessor for CopyIdsOracle {
 }
 
 #[derive(Debug, Default, Clone, Copy)]
-#[cfg(feature = "tokio")]
 pub(crate) struct EvenIdsOnly;
 
-#[cfg(feature = "tokio")]
 impl<A, T> SearchPostProcess<A, T> for EvenIdsOnly
 where
     A: HasId<Id = u32>,
@@ -201,10 +184,8 @@ where
 
 /// Oracle for [`EvenIdsOnly`]: the brute-force top-`k` with odd ids dropped.
 #[derive(Clone, Copy)]
-#[cfg(feature = "tokio")]
 pub(crate) struct EvenIdsOnlyOracle;
 
-#[cfg(feature = "tokio")]
 impl OracleProcessor for EvenIdsOnlyOracle {
     type Processor = EvenIdsOnly;
 

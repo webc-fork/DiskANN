@@ -240,11 +240,11 @@ where
 mod tests {
     use super::*;
 
-    use std::collections::HashSet;
     use webc_diskann::graph::{
         glue::{HybridPredicate, Predicate, PredicateMut, SearchAccessor},
         test::{provider as test_provider, synthetic::Grid},
     };
+    use std::collections::HashSet;
 
     /// A simple `QueryLabelProvider` that matches multiples of 3.
     #[derive(Debug)]
@@ -272,7 +272,6 @@ mod tests {
 
     impl HybridPredicate<u32> for NotIn<'_> {}
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_beta_filter() {
         // The grid of 4x4 will look like this:

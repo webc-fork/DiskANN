@@ -772,13 +772,13 @@ where
 mod tests {
     use super::*;
 
-    use diskann_utils::views::Matrix;
-    use diskann_vector::distance::Metric;
     use webc_diskann::{
         graph::{DiskANNIndex, InplaceDeleteMethod, search::Knn, test::synthetic::Grid},
         neighbor::Neighbor,
         provider::{DataProvider, Delete},
     };
+    use diskann_utils::views::Matrix;
+    use diskann_vector::distance::Metric;
 
     use crate::num::Capacity;
 
@@ -800,7 +800,8 @@ mod tests {
     ///   11 61 111 161 211
     ///    1 51 101 151 201
     ///
-    async fn smoke_flow() {
+    #[tokio::test]
+    async fn smoke() {
         let grid = Grid::Two;
         let size = 5;
         let data = grid.data(size);
@@ -986,21 +987,5 @@ mod tests {
         assert_eq!(neighbors[1].as_tuple(), (11, 1.0)); // this can be swapped with 2
         assert_eq!(neighbors[2].as_tuple(), (51, 1.0));
         assert_eq!(neighbors[3].as_tuple(), (62, 2.0));
-    }
-    #[cfg(feature = "tokio")]
-    #[tokio::test]
-    async fn smoke() {
-        smoke_flow().await;
-    }
-
-    // End-to-end proof that the `compio` feature builds and runs this crate
-    // without tokio: the same flow as `smoke`, driven by
-    // `compio::runtime::Runtime::block_on`.
-    #[cfg(all(feature = "compio", not(feature = "tokio")))]
-    #[test]
-    fn smoke_compio() {
-        compio::runtime::Runtime::new()
-            .unwrap()
-            .block_on(smoke_flow());
     }
 }

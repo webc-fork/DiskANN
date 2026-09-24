@@ -10,10 +10,10 @@ use std::{
 };
 
 use crate::storage::StorageReadProvider;
+use webc_diskann::utils::read_exact_into;
 use diskann_utils::io::Metadata;
 use serde::Deserialize;
 use thiserror::Error;
-use webc_diskann::utils::read_exact_into;
 
 use webc_diskann::utils::VectorRepr;
 

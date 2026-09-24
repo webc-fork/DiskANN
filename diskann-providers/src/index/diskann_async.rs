@@ -5,12 +5,12 @@
 
 use std::sync::Arc;
 
-use diskann_utils::future::AsyncFriendly;
 use webc_diskann::{
     ANNResult,
     graph::{Config, DiskANNIndex},
     utils::VectorRepr,
 };
+use diskann_utils::future::AsyncFriendly;
 
 use crate::model::{
     self,
@@ -158,16 +158,7 @@ pub(crate) mod tests {
     };
 
     use crate::storage::VirtualStorageProvider;
-    use crate::test_utils::test_data_root;
     use approx::assert_abs_diff_eq;
-    use diskann_quantization::scalar::train::ScalarQuantizationParameters;
-    use diskann_utils::views::Matrix;
-    use diskann_vector::{
-        DistanceFunction, PureDistanceFunction,
-        distance::{Metric, SquaredL2},
-    };
-    use rand::{distr::Distribution, rngs::StdRng, seq::SliceRandom};
-    use rstest::rstest;
     use webc_diskann::graph::test::synthetic::Grid;
     use webc_diskann::{
         graph::{
@@ -188,6 +179,15 @@ pub(crate) mod tests {
         },
         utils::{IntoUsize, ONE},
     };
+    use diskann_quantization::scalar::train::ScalarQuantizationParameters;
+    use crate::test_utils::test_data_root;
+    use diskann_utils::views::Matrix;
+    use diskann_vector::{
+        DistanceFunction, PureDistanceFunction,
+        distance::{Metric, SquaredL2},
+    };
+    use rand::{distr::Distribution, rngs::StdRng, seq::SliceRandom};
+    use rstest::rstest;
 
     use super::*;
     use crate::{
@@ -585,7 +585,6 @@ pub(crate) mod tests {
     #[case(1, 100)]
     #[case(3, 7)]
     #[case(4, 5)]
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn grid_search(#[case] dim: usize, #[case] grid_size: usize) {
         let l = 10;
@@ -652,7 +651,6 @@ pub(crate) mod tests {
     const IBC_ALL: IntraBatchCandidates = IntraBatchCandidates::All;
 
     #[rstest]
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn grid_search_with_build<T>(
         #[values(PhantomData::<f32>, PhantomData::<i8>, PhantomData::<u8>)] _v: PhantomData<T>,
@@ -976,7 +974,6 @@ pub(crate) mod tests {
     #[case(PI8, FullPrecision, Metric::L2, 100, 7, 43.0)]
     #[case(PI8, FullPrecision, Metric::Cosine, 93, 5, 46.0)]
     #[case(PI8, FullPrecision, Metric::InnerProduct, 77, 6, 47.0)]
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_sphere_search<T, S>(
         #[case] ty: PhantomData<T>,
@@ -1148,7 +1145,6 @@ pub(crate) mod tests {
         .await;
     }
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_even_filtering_beta() {
         let filter = Arc::new(EvenFilter);
@@ -1159,7 +1155,6 @@ pub(crate) mod tests {
     // Deletion //
     //////////////
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_inplace_delete_2d() {
         test_inplace_delete_2d_impl(FullPrecision).await;
@@ -1287,7 +1282,6 @@ pub(crate) mod tests {
         }
     }
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_consolidate_deletes_2d() {
         // create small index instance
@@ -1396,7 +1390,6 @@ pub(crate) mod tests {
     const SIFTSMALL_NORMALIZED: &str = "/sift/siftsmall_learn_256pts_normalized.fbin";
 
     #[rstest]
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_sift_build_and_search<S>(
         #[values(FullPrecision, Hybrid::new(None))] build_strategy: S,
@@ -1490,7 +1483,6 @@ pub(crate) mod tests {
     }
 
     #[rstest]
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_sift_build_and_range_search<S>(
         #[values(FullPrecision, Hybrid::new(None))] build_strategy: S,
@@ -1646,7 +1638,6 @@ pub(crate) mod tests {
 
     macro_rules! scalar_quant_test {
         ($name:ident, $nbits:literal, $search_l:literal) => {
-            #[cfg(feature = "tokio")]
             #[tokio::test]
             async fn $name() {
                 let ctx = &DefaultContext;
@@ -1752,7 +1743,6 @@ pub(crate) mod tests {
 
     macro_rules! scalar_only_test {
         ($name:ident, $nbits:literal) => {
-            #[cfg(feature = "tokio")]
             #[tokio::test]
             async fn $name() {
                 let ctx = &DefaultContext;
@@ -1844,7 +1834,6 @@ pub(crate) mod tests {
     // Spherical Build & Search //
     //////////////////////////////
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_sift_build_and_search_spherical() {
         let ctx = &DefaultContext;
@@ -1965,7 +1954,6 @@ pub(crate) mod tests {
     // Spherical only Build & Search //
     ///////////////////////////////////
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_sift_spherical_only_build_and_search_() {
         let ctx = &DefaultContext;
@@ -2078,7 +2066,6 @@ pub(crate) mod tests {
     #[rstest]
     #[case(Metric::L2, SIFTSMALL)]
     #[case(Metric::CosineNormalized, SIFTSMALL_NORMALIZED)]
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_sift_pq_only_build_and_search(#[case] metric: Metric, #[case] file: &str) {
         let ctx = &DefaultContext;
@@ -2317,7 +2304,6 @@ pub(crate) mod tests {
     }
 
     #[rstest]
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn inplace_delete_on_sift<S>(
         #[values(FullPrecision, Hybrid::new(None))] strategy: S,
@@ -2419,7 +2405,6 @@ pub(crate) mod tests {
     }
 
     #[rstest]
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn multi_inplace_delete_on_sift<S>(
         #[values(FullPrecision, Hybrid::new(None))] strategy: S,
@@ -2530,7 +2515,6 @@ pub(crate) mod tests {
     }
 
     #[rstest]
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_sift_256_vectors_with_consolidate_deletes(
         #[values(20, 100)] points_to_delete: u32,
@@ -2608,7 +2592,6 @@ pub(crate) mod tests {
         .await;
     }
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_final_prune() {
         let ctx = &DefaultContext;
@@ -2653,7 +2636,6 @@ pub(crate) mod tests {
     }
 
     #[rstest]
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_replace_sift_256_vectors_with_quant_vectors(
         #[values(None, Some(32))] max_fp_vecs_per_prune: Option<usize>,
@@ -2804,7 +2786,6 @@ pub(crate) mod tests {
         }
     }
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_one_level_index_same_as_two_level() {
         test_one_level_index_same_as_two_level_impl(NonZeroUsize::new(1).unwrap()).await;
@@ -2846,7 +2827,6 @@ pub(crate) mod tests {
         Ok(index)
     }
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_saturate_index() {
         let index_sat = create_retry_saturated_index(NonZeroU32::new(1).unwrap(), true)
@@ -2872,7 +2852,6 @@ pub(crate) mod tests {
         );
     }
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_retry_index() {
         let index_sat = create_retry_saturated_index(NonZeroU32::new(3).unwrap(), false)
@@ -2899,12 +2878,11 @@ pub(crate) mod tests {
     }
 
     #[cfg(feature = "experimental_diversity_search")]
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn test_inmemory_search_diversity_search() {
+        use webc_diskann::neighbor::AttributeValueProvider;
         use rand::Rng;
         use std::collections::HashMap;
-        use webc_diskann::neighbor::AttributeValueProvider;
 
         // Simple test attribute provider
         #[derive(Debug, Clone)]
@@ -3104,7 +3082,6 @@ pub(crate) mod tests {
         );
     }
 
-    #[cfg(feature = "tokio")]
     #[tokio::test]
     async fn vectors_with_infinity_values_should_be_inserted_and_searched_without_panic() {
         let l_build: usize = 20;

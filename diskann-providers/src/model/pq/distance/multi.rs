@@ -3,10 +3,10 @@
  * Licensed under the MIT license.
  */
 
+use webc_diskann::ANNResult;
 use diskann_utils::Reborrow;
 use diskann_vector::{DistanceFunction, PreprocessedDistanceFunction, distance::Metric};
 use thiserror::Error;
-use webc_diskann::ANNResult;
 
 use super::{QueryComputer, Shared, dynamic::VTable};
 use crate::model::FixedChunkPQTable;
@@ -457,10 +457,10 @@ where
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
+    use webc_diskann::utils::{IntoUsize, VectorRepr};
     use diskann_vector::PreprocessedDistanceFunction;
     use rand::{Rng, SeedableRng, distr::Distribution};
     use rstest::rstest;
-    use webc_diskann::utils::{IntoUsize, VectorRepr};
 
     use super::{
         super::test_utils::{self, TestDistribution},

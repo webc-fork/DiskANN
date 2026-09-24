@@ -52,8 +52,8 @@ use std::{
 };
 
 use crossbeam_queue::SegQueue;
-use parking_lot::{Mutex, MutexGuard};
 use webc_diskann::utils::IntoUsize;
+use parking_lot::{Mutex, MutexGuard};
 
 const DEFAULT_GUARD_SLOTS: NonZeroUsize = NonZeroUsize::new(256).unwrap();
 

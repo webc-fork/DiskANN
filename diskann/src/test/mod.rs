@@ -3,7 +3,6 @@
  * Licensed under the MIT license.
  */
 
-#[cfg(feature = "tokio")]
 pub(crate) mod tokio;
 
 mod cache;

@@ -5,6 +5,10 @@
 use std::io::{Seek, SeekFrom, Write};
 
 use super::{StorageReadProvider, StorageWriteProvider};
+use webc_diskann::{
+    ANNError, ANNResult,
+    utils::{IntoUsize, VectorRepr},
+};
 use diskann_quantization::{product::BasicTable, views::ChunkOffsetsBase};
 use diskann_utils::{
     io::{Metadata, read_bin, write_bin},
@@ -12,10 +16,6 @@ use diskann_utils::{
 };
 use rand::Rng;
 use tracing::info;
-use webc_diskann::{
-    ANNError, ANNResult,
-    utils::{IntoUsize, VectorRepr},
-};
 
 use crate::{
     model::{

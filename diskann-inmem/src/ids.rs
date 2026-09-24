@@ -9,9 +9,9 @@ use dashmap::{
     DashMap,
     mapref::entry::{self, OccupiedEntry},
 };
+use webc_diskann::utils::IntoUsize;
 use parking_lot::{RwLock, RwLockWriteGuard};
 use thiserror::Error;
-use webc_diskann::utils::IntoUsize;
 
 use crate::num::Capacity;
 

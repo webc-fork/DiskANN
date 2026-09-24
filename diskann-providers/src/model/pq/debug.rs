@@ -3,9 +3,9 @@
  * Licensed under the MIT license.
  */
 
+use webc_diskann::utils::IntoUsize;
 use diskann_utils::views;
 use diskann_vector::{PureDistanceFunction, distance::SquaredL2};
-use webc_diskann::utils::IntoUsize;
 
 pub struct MismatchRecord {
     pub row: usize,
